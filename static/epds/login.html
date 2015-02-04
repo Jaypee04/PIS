@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>PIS Mod</title>
+
+		<!-- CSS -->
+		<link rel="stylesheet" type="text/css" href="../lib/extjs/packages/ext-theme-crisp-touch/build/resources/ext-theme-crisp-touch-all-debug.css">
+	
+		
+		<!-- JS -->
+		<script type="text/javascript" src="../lib/extjs/ext-all.js"></script>
+
+		
+		
+		
+		<!-- Main -->
+		<script>
+			
+		Ext.onReady(function() {
+		   
+			Ext.create('Ext.container.Viewport', {
+				layout: {
+					type: 'vbox',
+					align: 'center',
+					pack: 'center'
+				},
+				items: {
+					xtype: 'form',
+					url: '/login', //'./login',
+					title: 'PISMod Login',
+					frame:true,
+					width: 340,
+					bodyPadding: 10,
+					
+					defaultType: 'textfield',
+					defaults: {
+						anchor: '100%'
+					},
+					
+					items: [
+						{
+							allowBlank: false,
+							fieldLabel: 'User name',
+							name: 'username',
+							itemId:'txtUsername',
+							emptyText: 'username'
+						},
+						{
+							allowBlank: false,
+							fieldLabel: 'Password',
+							name: 'password',
+							itemId:'txtPassword',
+							emptyText: 'password',
+							inputType: 'password',
+							validateOnBlur  : true,
+							validateOnChange: false,
+							listeners:  {
+								specialkey: function (f,e) {    
+									if (e.getKey() == e.ENTER) {
+										//alert("You pressed an enter button in text field.");
+										var form = this.up('form');
+										form.down('#btnLogin').handler();
+										
+									}
+									
+									/*var charCode = e.getCharCode();
+									if((!e.shiftKey && (e.getKey() >= 65 && e.getKey() <= 90)) || ((e.getKey() >= 97 && e.getKey() <= 122) && e.shiftKey)){
+										//Ext.MessageBox.alert("", "Caps Lock is On");
+										f.markInvalid('Caps Lock is On');
+									}
+									else {
+										f.isValid();
+									}*/
+									
+								}
+								
+							}
+						},
+						
+						{
+							xtype: 'label',
+							autoEl:{
+								tag: 'a',
+								href: '/epds/manual/PISMod-ePDS Manual.pdf',
+								html: "User's Manual"
+							}
+						}
+						
+					],
+					
+					buttons: [
+						{ 
+							text:'Login',
+							itemId:'btnLogin',
+							handler: function() {
+								
+								var formRef = this.up('form');
+								var form = formRef.getForm();
+								if (form.isValid()) {
+									form.submit({
+										//waitMsg: 'Authenticating...', 
+										success: function(form, action) {
+											var username = formRef.down('#txtUsername').getValue();
+											location.href = 'epds/?u=' + username; //'./';
+										},
+										failure: function(form, action) {
+											Ext.Msg.alert('Failed', 'Invalid Login!');//, result.msg);
+											formRef.down('#txtPassword').setValue('');
+										}
+									});
+								}
+							}
+							
+						}
+					]
+				}
+				
+				
+			});
+			
+		});
+	
+		</script>
+	</head>
+	<body></body>
+</html>
