@@ -52,7 +52,6 @@ Ext.define('Wizard', {
 						personnelPDF: dataForPDF
 					},
 					success: function(response){
-						console.log(response);
 						window.open('http://localhost:1210/'+response.responseText, '_blank');
 						
 					},
@@ -396,7 +395,6 @@ Ext.define('Wizard', {
 	}, 
 	getFormData: function(){
 		var me = this;
-		console.log(me.down('#national').getValue());
 		var personnel = {
 			surName: me.down('#txtSurname').getValue(),
 			firstName: me.down('#txtFirstname').getValue(),
@@ -635,7 +633,6 @@ Ext.define('Wizard', {
 	},
 	//function for mapping
 	mapData:function(p){
-	console.log(p);
 		var m = {};
 		m.PISN = p.surName;
 		m.PIFN = p.firstName;
@@ -1122,7 +1119,8 @@ Ext.define('Wizard', {
 											{value: '1', label: 'Single'},
 											{value: '2', label: 'Married'},
 											{value: '3', label: 'Separated'},
-											{value: '4', label: 'Widowed'},
+											{value: '4', label: 'Widowed'}
+											
 										]
 									}),
 									displayField: 'label',
@@ -1725,7 +1723,6 @@ Ext.define('Wizard', {
 						{ header: '<center>LEVEL</center>', menuDisabled:true, sortable:false, dataIndex: 'Level',
 							editor   : {
 								xtype:'combo', 
-								itemId:'cboLevel',
 								store: Ext.create('Ext.data.Store',{
 								   fields: ['value','level'],
 								   data : 
@@ -1735,56 +1732,78 @@ Ext.define('Wizard', {
 										{value:'3',level:'Vocational'}, 
 										{value:'2',level:'College'},
 										{value:'1',level:'Post Graduate'}
-									]
+									],
+									storeId:'storeLevel'
 								}),
 								displayField:'level',
 								valueField: 'value',
 								emptyText: 'Select level'
 							},
 							renderer: function(val){
-								//return cboLevel.getStore().getById(val).data.level;
-								console.log(this.up('#gridEducation').down('#cboLevel'));
-								/* index = this.up('cboLevel').getStore().findExact('value',val); 
+								var ref = Ext.data.StoreManager.lookup('storeLevel');
+								index = ref.findExact('value',val); 
 								if (index != -1){
-									rs = this.up('cboLevel').getStore().getAt(index).data; 
+									rs = ref.getAt(index).data; 
 									return rs.level; 
-								} */
-							} 
+								}
+							}
 						},
 						{ header: '<center>NAME OF SCHOOL<br>(Write in Full)</center>', menuDisabled:true, sortable:false, dataIndex: 'NameofSchool', editor: 'textfield', flex:2.6 },
 						{ header: '<center>DEGREE<br>(Write in Full)</center>', menuDisabled:true, sortable:false, dataIndex: 'Degree', 
 							editor   : {
 								xtype:'combo', 
+								itemId:'cboDegree',
 								queryMode: 'local', 
-								store: { 
-									autoLoad: true, 
+								store: Ext.create('Ext.data.Store',{
+								   autoLoad: true, 
 									fields: ['degreeCode', 'degreeTitle'], 
+									storeId:'storeDegree',
 									proxy: { 
 										type: 'ajax', 
 										url: '/getDegree' 
-									} 
-								},
+									}
+									
+								}),
 								displayField:'degreeTitle',
 								valueField: 'degreeCode',
 								emptyText: 'Select Degree'
 							},
-							
+							renderer: function(val){
+								var ref = Ext.data.StoreManager.lookup('storeDegree');
+								//console.log(ref);
+								index = ref.findExact('degreeCode',val); 
+								if (index != -1){
+									rs = ref.getAt(index).data; 
+									return rs.degreeTitle; 
+								}
+							},
 							flex:1.6 },
 						{ header: '<center>COURSE<br>(Write in Full)</center>', menuDisabled:true, sortable:false, dataIndex: 'Course', 
 							editor   : {xtype:'combo', 
 								queryMode: 'local', 
-								store: { 
-									autoLoad: true, 
+								store: Ext.create('Ext.data.Store',{
+								   autoLoad: true, 
 									fields: ['courseCode', 'courseTitle'], 
+									storeId:'storeCourse',
 									proxy: { 
 										type: 'ajax', 
 										url: '/getCourse' 
-									} 
-								},
+									}
+									
+								}),
 								displayField:'courseTitle',
 								valueField: 'courseCode',
 								emptyText: 'Select Course'
-							},flex:1.6 },
+							},
+							renderer: function(val){
+								var ref = Ext.data.StoreManager.lookup('storeCourse');
+								index = ref.findExact('courseCode',val); 
+								if (index != -1){
+									rs = ref.getAt(index).data; 
+									return rs.courseTitle; 
+								}
+							},
+							flex:1.6 },
 						{ header: '<center>YEAR GRADUATED<br>(if graduated)</center>', fixed:true, menuDisabled:true, sortable:false, dataIndex: 'YearGraduated', editor: 'textfield', flex:1 },
 						{ header: '<center>HIGHEST GRADE/<br>LEVEL/<br>UNITS EARNED<br>(Write in Full)</center>', fixed:true, menuDisabled:true, sortable:false, dataIndex: 'HighestGrade', editor: 'textfield', flex:1 },
 						{ header: '<center>INCLUSIVE DATES OF<br>ATTENDANCE</center>', fixed:true, menuDisabled:true, sortable:false,
@@ -2094,19 +2113,29 @@ Ext.define('Wizard', {
 						{
 							header: '<center>STATUS <br>OF APPOINTMENT<\center>', 
 								dataIndex: 'workExStat', 
-									editor   : {xtype:'combo', 
+								editor   : {xtype:'combo', 
 									queryMode: 'local', 
-									store: { 
-										autoLoad: true, 
+									store: Ext.create('Ext.data.Store',{
+									  autoLoad: true, 
 										fields: ['appointmentCode', 'appointmentDescription'], 
+										storeId:'storeAppointment',
 										proxy: { 
 											type: 'ajax', 
 											url: '/getStatusOfAppointment' 
-										} 
-									},
+										}
+										
+									}),
 									displayField:'appointmentDescription',
 									valueField: 'appointmentCode',
-									emptyText: 'Select Status'
+									emptyText: 'Select status'
+								},
+								renderer: function(val){
+									var ref = Ext.data.StoreManager.lookup('storeAppointment');
+									index = ref.findExact('appointmentCode',val); 
+									if (index != -1){
+										rs = ref.getAt(index).data; 
+										return rs.appointmentDescription; 
+									}
 								},
 								fixed:true, 
 								menuDisabled:true, 
@@ -2331,19 +2360,7 @@ Ext.define('Wizard', {
 					store: {
 						xtype: 'store',
 						fields:['TitleofSeminar', 'TrainingFrom', 'TrainingTo', 'NumberofHours','ConductedBy']
-						/* data: { 
-							items: [
-								{'TitleofSeminar': 'How to train your Dragon', 'TrainingFrom': '2010', 'TrainingTo': '2010', 'NumberofHours': '240', 'ConductedBy':'DreamWorks Animation'}
-							]
-						},
-						autoLoad: true,
-						proxy: {
-							type: 'memory',
-							reader: {
-								type: 'json',
-								rootProperty: 'items'
-							}
-						} */
+						
 						
 					},
 					columns: [
