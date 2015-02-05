@@ -113,6 +113,8 @@ Ext.define('Wizard', {
 		me.down('#txtMiddlename').setValue(p.middleName);
 		me.down('#txtNameExtension').setValue(p.nameExtension);
 		me.down('#dteDateofBirth').setValue(new Date(p.dateOfBirth));
+		//var outputDate = Ext.Date.format(new Date(p.dateOfBirth), 'm/d/Y');
+		//console.log(outputDate);
 		me.down('#txtPlaceofBirth').setValue(p.placeOfBirth);
 		me.down('#cboSex').setValue(p.sex);
 		me.down('#cboCivilStatus').setValue(p.civilStatus);
@@ -234,7 +236,7 @@ Ext.define('Wizard', {
 			
 			//Salary Computation
 			var monthlySalary;
-			if (exp.wrkExPerSal==1)//Annually
+			if (exp.wrkExPerSal=='1')//Annually
 			{
 				monthlySalary = exp.wrkExMonSal/12;
 			}
@@ -312,7 +314,7 @@ Ext.define('Wizard', {
 				SpecialSkills: s.sSkills
 				
 			});
-			console.log(s.sSkills);
+			
 		}
 		/* //if skills came from emp_dtl table
 		console.log(p.skills[0].sSkills);
@@ -363,17 +365,6 @@ Ext.define('Wizard', {
 		me.down('#txtIndigenous').setValue(p.others.indigenousRemarks);
 		me.down('#txtAbled').setValue(p.others.abledRemarks);
 		me.down('#txtSolo').setValue(p.others.soloRemarks);
-		/* console.log(p.others.national);
-		if (p.others.national=='0')
-		{
-			me.down('#radio1').setValue(false);
-			me.down('#radio2').setValue(true);
-		}
-		else if(p.others.national=='1')
-		{
-			me.down('#radio1').setValue(true);
-			me.down('#radio2').setValue(false);
-		} */
 		me.down('#national').setValue(p.others.national);
 		me.down('#local').setValue(p.others.local);
 		me.down('#charged').setValue(p.others.charged);
@@ -650,7 +641,7 @@ Ext.define('Wizard', {
 		m.PIFN = p.firstName;
 		m.PIMN = p.middleName;
 		m.PIEX = p.nameExtension;
-		m.PIDOB = p.dateOfBirth;
+		m.PIDOB = Ext.Date.format(new Date(p.dateOfBirth), 'm/d/Y');
 		m.PIPOB = p.placeOfBirth;
 		m.PICITIZENSHIP = p.citizenship;
 		m.PIHEIGHT = p.height;
@@ -811,8 +802,8 @@ Ext.define('Wizard', {
 		}
 		//WORK EXPERIENCE
 		for(var work in p.experience){
-			m['WEFROM' + work] = p.experience[work].wrkExFrm;
-			m['WETO' + work] = p.experience[work].wrkExTo;
+			m['WEFROM' + work] = Ext.Date.format(new Date(p.experience[work].wrkExFrm),'m/d/Y');
+			m['WETO' + work] = Ext.Date.format(new Date(p.experience[work].wrkExTo),'m/d/Y');
 			m['WEPOSITION' + work] = p.experience[work].wrkExPos;
 			m['WEDAOC' + work] = p.experience[work].wrkExOff;
 			m['WEMS' + work] = p.experience[work].wrkExMonSal;
@@ -832,8 +823,8 @@ Ext.define('Wizard', {
 		//traning program
 		for(var trainings in p.training){
 			m['TPTOS' + trainings] = p.training[trainings].titleOfSeminar;
-			m['TPFROM' + trainings] = p.training[trainings].trainingFrom;
-			m['TPTO' + trainings] = p.training[trainings].trainingTo;
+			m['TPFROM' + trainings] = Ext.Date.format(new Date(p.training[trainings].trainingFrom),'m/d/Y');
+			m['TPTO' + trainings] = Ext.Date.format(new Date(p.training[trainings].trainingTo),'m/d/Y');
 			m['TPNOH' + trainings] = p.training[trainings].numberOfHours;
 			m['TPCS' + trainings] = p.training[trainings].conductedBy;			
 		}
@@ -855,7 +846,7 @@ Ext.define('Wizard', {
 		// children		
 		for(var child in p.children){
 			m['FBNOC' + child] = p.children[child].childName;
-			m['FBDOB' + child] = p.children[child].birthDate;
+			m['FBDOB' + child] = Ext.Date.format(new Date(p.children[child].birthDate),'m/d/Y');
 		}
 		
 		return JSON.stringify(m);
@@ -935,6 +926,7 @@ Ext.define('Wizard', {
 				 'VwName','VwFrom','VwTo', 'VwNumbers','VwPosition'		
 			]
 		}); 
+		
 		
 		//this.buttons = this.createNavButtons();
 		this.callParent(arguments);
@@ -1093,8 +1085,6 @@ Ext.define('Wizard', {
 									xtype: 'combo',
 									itemId:'cboSex',
 									fieldLabel:'Gender',
-									//store: [[1,'Female'],[2,'Male']],
-									
 									store: Ext.create('Ext.data.Store',{
 										fields: ['value', 'label'],
 										data: [
@@ -1105,8 +1095,8 @@ Ext.define('Wizard', {
 									displayField: 'label',
 									valueField: 'value',
 									flex: 1,
-									editable: false,
-									_listeners:{
+									editable: false
+									/* listeners:{
 										select: function(){
 											var cbox = this;
 											
@@ -1119,7 +1109,7 @@ Ext.define('Wizard', {
 												this.setValue('2');
 											}
 										}
-									}
+									} */
 								},
 								// CIVIL STATUS
 								{
@@ -1141,7 +1131,7 @@ Ext.define('Wizard', {
 									padding: '0 0 0 10',
 									flex: 1,
 									editable: false,
-									_listeners: {
+									/* _listeners: {
 										select: function(){
 											
 											var combo = this;
@@ -1163,7 +1153,7 @@ Ext.define('Wizard', {
 											}
 											
 										}
-									}
+									} */
 								},
 								// CITIZENSHIP
 								{
@@ -1259,7 +1249,7 @@ Ext.define('Wizard', {
 										},
 										afterrender:function(a){
 											a.fileInputEl.set({
-												accept:'image/*'
+												accept:'image'
 											});
 											var elem = a.getEl().dom;
 											var me = this.up('fieldcontainer');
@@ -1588,21 +1578,7 @@ Ext.define('Wizard', {
 				    title: 'Children',
 					store: {
 						xtype: 'store',
-					    fields:['name', 'dob'],
-					    data: { 
-							items: [
-								/* {name: 'Sophia Isabel M. Arboleda', dob: '11/08/2010'},
-								{name: 'Damien Angelo M. Arboleda', dob: '08/27/2012'}, */
-							]
-					        
-					    },
-					    proxy: {
-					        type: 'memory',
-					        reader: {
-					            type: 'json',
-					            rootProperty: 'items'
-					        }
-					    }
+					    fields:['name', 'dob']
 					},
 					columns: [
 				        { header: '<center>NAME OF CHILD (Write full name and list all)</center>',  dataIndex: 'name', editor: 'textfield', flex: 2},
@@ -1611,11 +1587,10 @@ Ext.define('Wizard', {
 							dataIndex: 'dob', 
 							width: 135,
 							editor: {
-								xtype: 'datefield' ,
-								allowBlank: false,
+								xtype: 'datefield',
+								allowBlank: true,
 								format: 'm/d/Y',
-								minValue: '01/01/1950',
-								maxValue: Ext.Date.format(new Date(), 'm/d/Y') 
+								maxValue: Ext.Date.format(new Date(), 'm/d/Y')
 							},
 							flex: 1 }
 				    ],
@@ -1748,7 +1723,9 @@ Ext.define('Wizard', {
 					},
 					columns: [
 						{ header: '<center>LEVEL</center>', menuDisabled:true, sortable:false, dataIndex: 'Level',
-							editor   : {xtype:'combo', 
+							editor   : {
+								xtype:'combo', 
+								itemId:'cboLevel',
 								store: Ext.create('Ext.data.Store',{
 								   fields: ['value','level'],
 								   data : 
@@ -1763,49 +1740,36 @@ Ext.define('Wizard', {
 								displayField:'level',
 								valueField: 'value',
 								emptyText: 'Select level'
-							}
+							},
+							renderer: function(val){
+								//return cboLevel.getStore().getById(val).data.level;
+								console.log(this.up('#gridEducation').down('#cboLevel'));
+								/* index = this.up('cboLevel').getStore().findExact('value',val); 
+								if (index != -1){
+									rs = this.up('cboLevel').getStore().getAt(index).data; 
+									return rs.level; 
+								} */
+							} 
 						},
 						{ header: '<center>NAME OF SCHOOL<br>(Write in Full)</center>', menuDisabled:true, sortable:false, dataIndex: 'NameofSchool', editor: 'textfield', flex:2.6 },
 						{ header: '<center>DEGREE<br>(Write in Full)</center>', menuDisabled:true, sortable:false, dataIndex: 'Degree', 
-							editor   : {xtype:'combo', 
-								store: Ext.create('Ext.data.Store',{
-								   fields: ['value','degreeTitle'],
-								   data : 
-									[                 
-										{value:'00',degreeTitle:'Vocational'},
-										{value:'01',degreeTitle:'Elementary'}, 
-										{value:'02',degreeTitle:'High School'}, 
-										{value:'03',degreeTitle:'1st Year'}, 
-										{value:'04',degreeTitle:'2nd Year'},
-										{value:'05',degreeTitle:'3rd Year'},
-										{value:'06',degreeTitle:'4th Year'}, 
-										{value:'07',degreeTitle:'5th Year'}, 
-										{value:'08',degreeTitle:'Certificate in'}, 
-										{value:'09',degreeTitle:'Associate in'},
-										{value:'10',degreeTitle:'Diploma in'},
-										{value:'11',degreeTitle:'B/Bachelor of'}, 
-										{value:'12',degreeTitle:'B.S.'}, 
-										{value:'13',degreeTitle:'A.B.'}, 
-										{value:'14',degreeTitle:'A.A.'},
-										{value:'15',degreeTitle:'M.D.'},
-										{value:'16',degreeTitle:'D.D.M.'}, 
-										{value:'17',degreeTitle:'D.V.M'}, 
-										{value:'30',degreeTitle:'M.S.'}, 
-										{value:'31',degreeTitle:'M.A.'},
-										{value:'32',degreeTitle:'Master of'},
-										{value:'33',degreeTitle:'M.B.A.'}, 
-										{value:'34',degreeTitle:'M.A.Ed.'}, 
-										{value:'35',degreeTitle:'M.A.T.'}, 
-										{value:'36',degreeTitle:'Ph.D.'},
-										{value:'37',degreeTitle:'Doctor of'},
-										{value:'38',degreeTitle:'Master in'}
-										
-									]
-								}),
+							editor   : {
+								xtype:'combo', 
+								queryMode: 'local', 
+								store: { 
+									autoLoad: true, 
+									fields: ['degreeCode', 'degreeTitle'], 
+									proxy: { 
+										type: 'ajax', 
+										url: '/getDegree' 
+									} 
+								},
 								displayField:'degreeTitle',
-								valueField: 'value',
-								emptyText: 'Select degree'
-							}, flex:1.6 },
+								valueField: 'degreeCode',
+								emptyText: 'Select Degree'
+							},
+							
+							flex:1.6 },
 						{ header: '<center>COURSE<br>(Write in Full)</center>', menuDisabled:true, sortable:false, dataIndex: 'Course', 
 							editor   : {xtype:'combo', 
 								queryMode: 'local', 
@@ -1814,7 +1778,7 @@ Ext.define('Wizard', {
 									fields: ['courseCode', 'courseTitle'], 
 									proxy: { 
 										type: 'ajax', 
-										url: '/getDegreeCourse' 
+										url: '/getCourse' 
 									} 
 								},
 								displayField:'courseTitle',
@@ -1910,25 +1874,12 @@ Ext.define('Wizard', {
 					xtype: 'grid',
 					itemId: 'gridCSE',
 					collapsible: true,
-					//collapsed: true,
 					margin: '20 40 20 20',
 				    title: 'Civil Service Eligibility',
 					store: {
 						xtype: 'store',
 					    fields:['CseCareer', 'CseRating', 'CseDate', 'CsePlace', 'CseNumber','CseDor']
-					 /*   data: { 
-							items: [
-								{CseCareer: '', CseRating: '',CseDate: '',CsePlace: '',CseNumber: '',CseDor: ''},
-							]     
-					    },  
-					    proxy: {
-					        type: 'memory',
-					        reader: {
-					            type: 'json',
-					            rootProperty: 'items'
-					        }
-					    }
-						*/
+					 
 					}, 
 								
 					columns: [
@@ -1983,15 +1934,6 @@ Ext.define('Wizard', {
 									width:80
 								 
 								},
-								/* { 
-									header: '<center>Date of Release</center>', 
-									dataIndex: 'CseDor', 
-									editor: 'textfield', 
-									fixed:true, 
-									menuDisabled:true, 
-									sortable:false,
-									width:150
-								} */
 								{ 
 									header: '<center>Date of Release</center>', 
 									xtype: 'datecolumn',
@@ -2076,41 +2018,18 @@ Ext.define('Wizard', {
 					store: {
 						xtype: 'store',
 					    fields:['workExFrom', 'workExTo', 'workExPosition','workExDep','workExMnth','workExSal','workExStat','workExGovt'],
-					 /*    data: { 
-							items: [
-								{workExFrom:'', workExTo:'',workExPosition:'',workExDep:'',workExMnth:'',workExSal:'',workExStat:'',workExGovt:''},
-	
-							]
-					        
-					    }, 
-					    proxy: {
-					        type: 'memory',
-					        reader: {
-					            type: 'json',
-					            rootProperty: 'items'
-					        }
-					    }*/
+					 
 					},
 					columns: [			 
 						{ header: '<center>INCLUSIVE DATES</center>', fixed:true, menuDisabled:true, sortable:false,
 							columns: [
-								/* {
-									header: '<center>From</center>', 
-									dataIndex: 'workExFrom', 
-									editor: 'textfield',
-									fixed:true, 
-									menuDisabled:true, 
-									sortable:false,
-									width:80
-								 
-								}, */
 								{ 
 									header: '<center>From</center>', 
 									xtype: 'datecolumn',
 									dataIndex: 'workExFrom', 
 									editor: {
 										xtype: 'datefield',
-										allowBlank: false,
+										allowBlank: true,
 										format: 'm/d/Y',
 										maxValue: Ext.Date.format(new Date(), 'm/d/Y')
 									},
@@ -2119,22 +2038,13 @@ Ext.define('Wizard', {
 									sortable:false,
 									width:80
 								},
-								/* { 
-									header: '<center>To</center>', 
-									dataIndex: 'workExTo', 
-									editor: 'textfield', 
-									fixed:true, 
-									menuDisabled:true, 
-									sortable:false,
-									width:80
-								} */
 								{ 
 									header: '<center>To</center>', 
 									xtype: 'datecolumn',
 									dataIndex: 'workExTo', 
 									editor: {
 										xtype: 'datefield',
-										allowBlank: false,
+										allowBlank: true,
 										format: 'm/d/Y',
 										maxValue: Ext.Date.format(new Date(), 'm/d/Y')
 									},
@@ -2184,7 +2094,20 @@ Ext.define('Wizard', {
 						{
 							header: '<center>STATUS <br>OF APPOINTMENT<\center>', 
 								dataIndex: 'workExStat', 
-								editor: 'textfield', 
+									editor   : {xtype:'combo', 
+									queryMode: 'local', 
+									store: { 
+										autoLoad: true, 
+										fields: ['appointmentCode', 'appointmentDescription'], 
+										proxy: { 
+											type: 'ajax', 
+											url: '/getStatusOfAppointment' 
+										} 
+									},
+									displayField:'appointmentDescription',
+									valueField: 'appointmentCode',
+									emptyText: 'Select Status'
+								},
 								fixed:true, 
 								menuDisabled:true, 
 								sortable:false,
@@ -2433,7 +2356,7 @@ Ext.define('Wizard', {
 									dataIndex: 'TrainingFrom', 
 									editor: {
 										xtype: 'datefield',
-										allowBlank: false,
+										allowBlank: true,
 										format: 'm/d/Y',
 										maxValue: Ext.Date.format(new Date(), 'm/d/Y')
 									},
@@ -2448,7 +2371,7 @@ Ext.define('Wizard', {
 									dataIndex: 'TrainingTo', 
 									editor: {
 										xtype: 'datefield',
-										allowBlank: false,
+										allowBlank: true,
 										format: 'm/d/Y',
 										maxValue: Ext.Date.format(new Date(), 'm/d/Y')
 									},
@@ -2786,11 +2709,15 @@ Ext.define('Wizard', {
 								if(value=='1')
 								{
 									me.down('#radio1').setValue(true);
-									
+									var insert = '1';
+									me.down('#radio1').setValue(insert);
+									console.log(me.down('#radio1').getValue());
 								}
 								else if(value=='0')
 								{
-									me.down('#radio2').setValue(true);
+									var x = me.down('#radio2').setValue(value);
+									//var insert = '0';
+									me.down('#radio2').checked=true;
 									
 								}
 							}
@@ -3269,19 +3196,7 @@ Ext.define('Wizard', {
 					margin: '20 40 20 20',
 					store: {
 						xtype: 'store',
-						fields:['cReference', 'Address', 'cNumber'],
-						/* data: { 
-							items: [
-								{'cReference': 'Andres Bonifacio', 'Address':'Tondo, Manila', 'cNumber':'N/A'}
-							]
-						},
-						proxy: {
-							type: 'memory',
-							reader: {
-								type: 'json',
-								rootProperty: 'items'
-							}
-						} */
+						fields:['cReference', 'Address', 'cNumber']
 					},
 					tbar:[
 						{

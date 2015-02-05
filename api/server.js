@@ -336,28 +336,49 @@ function setRoutes(){
 		var destinationPDF =  "data/" + (new Date()).getTime() + ".pdf";
 		
 		var data = JSON.parse(req.body.personnelPDF);
-		console.log('This is the data: ',data);
+		//console.log('This is the data: ',data);
 		var path = require('path');
 		pdfFiller.fillForm( sourcePDF, destinationPDF, data, function(){ 
 			fs.readFile(destinationPDF, function (err,data){
 				res.contentType("application/pdf");
-				//console.log(path.basename(destinationPDF));
 				res.send(destinationPDF);
-				res.end('{"success":"Showed Successfully", "status":200}');
+				res.end();
 			});
 		});
 	
 	});
 	
-	app.get('/getDegreeCourse',function(req,res){
+	app.get('/getCourse',function(req,res){
 		
 		var connection = new mssql.Connection(config, function(err) {
 			var request = new mssql.Request(connection);
-			request.query("SELECT COURSE_C as courseCode, COURSE_T as courseTitle FROM COURSE Order BY COURSE_T", function(err, recordset) {
+			request.query("SELECT COURSE_C as courseCode, COURSE_T as courseTitle FROM COURSE ORDER BY COURSE_T", function(err, recordset) {
+				var course = recordset; 
+				res.json(course);
+			});
+		});
+		
+	});
+	
+	app.get('/getDegree',function(req,res){
+		
+		var connection = new mssql.Connection(config, function(err) {
+			var request = new mssql.Request(connection);
+			request.query("SELECT DEGREE_C as degreeCode, DEGREETYPE as degreeTitle FROM DEGFILE ORDER BY DEGREETYPE", function(err, recordset) {
 				var degree = recordset; 
-				
 				res.json(degree);
-				
+			});
+		});
+		
+	});
+	
+	app.get('/getStatusOfAppointment',function(req,res){
+		
+		var connection = new mssql.Connection(config, function(err) {
+			var request = new mssql.Request(connection);
+			request.query("SELECT [APPT_CODE] as appointmentCode,[APPT_DESC] as appointmentDescription from APPT ORDER BY APPT_DESC", function(err, recordset) {
+				var appointment = recordset; 
+				res.json(appointment);
 			});
 		});
 		
@@ -883,7 +904,7 @@ function setRoutes(){
 							'careerPlace': mssql.NVarChar(30),
 							'careerDateMM': mssql.NVarChar(2),
 							'careerDateDD': mssql.NVarChar(2),
-							'careerDateYY': mssql.NVarChar(2),
+							'careerDateYY': mssql.NVarChar(4),
 							'NamriaID': mssql.VarChar(50),
 							'licenseNumber': mssql.NVarChar(30),
 							'dateOfRelease': mssql.Date
@@ -959,6 +980,64 @@ function setRoutes(){
 					
 					//Update SERV
 					function(callback){	
+						var paramDef = {
+							'StartDate': mssql.Date,
+							'EndDate': mssql.Date,
+							'Position': mssql.VarChar(50),
+							'Office': mssql.VarChar(50),
+							'Salary': mssql.Float,
+							'Status': mssql.VarChar(50),
+							'YESNO': mssql.VarChar(4),
+							'Grade': mssql.VarChar(50),
+							'NamriaID': mssql.VarChar(50)
+						};
+						
+						var sql = MultilineWrapper(function(){/*
+						INSERT INTO SERV 
+						(EMP_ID,
+						START_D,
+						END_D, 
+						POS_TITLE,
+						OFFICE_M,
+						SALARY_A,
+						STAT_APPT,
+						GOV_PRIV,
+						SALARY_G) 
+						VALUES 
+						(@NamriaID,
+						@StartDate,
+						@EndDate,
+						@Position,
+						@Office,
+						@Salary,
+						@Status,
+						@YESNO,
+						@Grade)
+						*/});
+						
+						for(var item in p.experience){
+							var e = p.experience[item];
+							
+							var values = {
+								StartDate: new Date(e.wrkExFrm), 
+								EndDate: new Date(e.wrkExTo), 
+								Position: e.wrkExPos, 
+								Office: e.wrkExOff,
+								Salary: e.wrkExMonSal,
+								Status: e.wrkExAppt,
+								YESNO: e.wrkExGovServ,
+								Grade: e.wrkExSalGrd,
+								NamriaID:p.NID
+							};
+							query2(connection, 
+								sql, 
+								paramDef, 
+								values,
+								function(err, rs){
+									callback();
+							});
+						}
+						
 						console.log('SERV: Updated Successfully');	
 					},
 					
@@ -1052,7 +1131,7 @@ function setRoutes(){
 							'NamriaID': mssql.VarChar(255)
 						};
 						
-						var sql = ultilineWrapper(function(){/*
+						var sql = MultilineWrapper(function(){/*
 						UPDATE CHK_LIST SET 
 						deg_3=@National,
 						deg_3r=@NationalRemarks,
