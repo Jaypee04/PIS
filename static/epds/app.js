@@ -40,6 +40,8 @@ Ext.define('Wizard', {
 			text: 'Print ePDS',
 			handler: function(){
 				var me = this.up('wizard');
+				console.log(me.down('#national').getValue());
+				
 				var personnel = me.getFormData();
 				var dataForPDF = me.mapData(personnel);
 				//console.log(dataForPDF);
@@ -196,9 +198,10 @@ Ext.define('Wizard', {
 		// load eligibility
 		var grid2 = me.down('#gridCSE');
 		grid2.getStore().removeAll();
-		
+		console.log(p.eligibility.eligDate);
 		for(item in p.eligibility){
 			var cse = p.eligibility[item];
+			
 			grid2.getStore().add({
 				CseCareer: cse.eligTitle,
 				CseRating: cse.eligRating,
@@ -233,56 +236,15 @@ Ext.define('Wizard', {
 		for(item in p.experience){
 			var exp = p.experience[item];
 			
-			//Salary Computation
-			var monthlySalary;
-			if (exp.wrkExPerSal=='1')//Annually
-			{
-				monthlySalary = exp.wrkExMonSal/12;
-			}
-			if (exp.wrkExPerSal=='2')//Monthly
-			{
-				monthlySalary = exp.wrkExMonSal;
-			}
-			if (exp.wrkExPerSal=='3')//Daily
-			{
-				monthlySalary = (exp.wrkExMonSal*22)*12;
-			}
-			
-			//Appointment Status
-			var appointmentStatus;
-			if (exp.wrkExAppt=='1')
-			{
-				appointmentStatus = 'Permanent';
-			}
-			else if (exp.wrkExAppt=='2')
-			{
-				appointmentStatus = 'Temporary';
-			}
-			else if (exp.wrkExAppt=='3')
-			{
-				appointmentStatus = 'Probitionary';
-			}
-			else if (exp.wrkExAppt=='4')
-			{
-				appointmentStatus = 'Co-Terminus';
-			}
-			else if (exp.wrkExAppt=='5')
-			{
-				appointmentStatus = 'Contractual';
-			}
-			else if (exp.wrkExAppt=='6')
-			{
-				appointmentStatus = 'Casual';
-			}
 			
 			grid4.getStore().add({
 				workExFrom:  new Date(exp.wrkExFrm),
 				workExTo: new Date(exp.wrkExTo),
 				workExPosition:exp.wrkExPos,
 				workExDep: exp.wrkExOff,
-				workExMnth:monthlySalary,
+				workExMnth:exp.wrkExMonSal, //monthlySalary,
 				workExSal: exp.wrkExSalGrd,
-				workExStat:appointmentStatus,
+				workExStat:exp.wrkExAppt,
 				workExGovt:exp.wrkExGovServ
 			});
 			
@@ -395,6 +357,7 @@ Ext.define('Wizard', {
 	}, 
 	getFormData: function(){
 		var me = this;
+		
 		var personnel = {
 			surName: me.down('#txtSurname').getValue(),
 			firstName: me.down('#txtFirstname').getValue(),
@@ -472,6 +435,7 @@ Ext.define('Wizard', {
 			dateAccomplished: me.down('#dteDateAccomplished').getValue() 
 		};
 		return personnel;
+		
 		//console.log(JSON.stringify(personnel));
 		
 		
@@ -641,6 +605,31 @@ Ext.define('Wizard', {
 		m.PIDOB = Ext.Date.format(new Date(p.dateOfBirth), 'm/d/Y');
 		m.PIPOB = p.placeOfBirth;
 		m.PICITIZENSHIP = p.citizenship;
+		//CIVIL STATUS
+		if (p.civilStatus == '1') {
+			m.CSS = "On";
+			m.CSM = "Off";
+			m.CSSE = "Off";
+			m.CSW = "Off";		
+		}
+		else if (p.civilStatus == '2') {
+			m.CSS = "Off";
+			m.CSM = "On";
+			m.CSSE = "Off";
+			m.CSW = "Off";		
+		}
+		else if (p.civilStatus == '3') {
+			m.CSS = "Off";
+			m.CSM = "Off";
+			m.CSSE = "On";
+			m.CSW = "Off";		
+		}
+		else if (p.civilStatus == '4') {
+			m.CSS = "Off";
+			m.CSM = "Off";
+			m.CSSE = "Off";
+			m.CSW = "On";		
+		}
 		m.PIHEIGHT = p.height;
 		m.PIWEIGHT = p.weight;
 		m.PIBLOODTYPE = p.bloodType;
@@ -672,123 +661,87 @@ Ext.define('Wizard', {
 		m.FBMS = p.motSurname;
 		m.FBMFN = p.motFirstname;
 		m.FBMMN = p.motMiddlename;
-		m.CTCN = p.taxNo;
-		m.IA = p.issuedAt;
-		m.IO = p.issuedDate;
+	
+		// CHILDREN					
+		for(var child in p.children){
+			m['FBNOC' + child] = p.children[child].fullName;
+			m['FBDOB' + child] = Ext.Date.format(new Date(p.children[child].birthDate),'m/d/Y');
+		}
 		
 		//EDUCATION
-			//console.log(p.education);
-		/* for(var educ in p.education){
-		console.log (p.education[0].level);
-			if (p.education[educ].level == '5'){			
+		var colcntr=0;
+		var pgcntr=0;
+		for(var educ in p.education){
+				
+			var ref = Ext.data.StoreManager.lookup('storeDegree');
+			index = ref.findExact('degreeCode',p.education[educ].degree); 
+			var degreeDescription='';
+			if (index != -1){
+				 degreeDescription = ref.getAt(index).data; 
+				
+			}	
+			
+			var ref = Ext.data.StoreManager.lookup('storeCourse');
+			index = ref.findExact('courseCode',p.education[educ].course); 
+			var courseDescription='';
+			if (index != -1){
+				 courseDescription = ref.getAt(index).data; 
+				
+			}	
+
+				
+				
+			if (p.education[educ].level == '5'){		 //Elementary	
 				m.NOS0 = p.education[educ].schoolName;
 				m.YEARGRADUATED0 = p.education[educ].yearGraduated;
 				m.HIGHESTGRADE0 = p.education[educ].highestGrade;
-				m.EBFROM0 = p.education[educ].fromDate;
-				m.EBTO0 = p.education[educ].toDate;
+				m.EBFROM0 = Ext.Date.format(new Date(p.education[educ].fromDate),'m/d/Y');
+				m.EBTO0 = Ext.Date.format(new Date(p.education[educ].toDate),'m/d/Y');
 				m.EBSCHOLARSHIP0 = p.education[educ].scholarship;
 			}
 			if (p.education[educ].level == '4'){
 				m.NOS1 = p.education[educ].schoolName;
 				m.YEARGRADUATED1 = p.education[educ].yearGraduated;
 				m.HIGHESTGRADE1 = p.education[educ].highestGrade;
-				m.EBFROM1 = p.education[educ].fromDate;
-				m.EBTO1 = p.education[educ].toDate;
+				m.EBFROM1 = Ext.Date.format(new Date(p.education[educ].fromDate),'m/d/Y');
+				m.EBTO1 = Ext.Date.format(new Date(p.education[educ].toDate),'m/d/Y');
 				m.EBSCHOLARSHIP1 = p.education[educ].scholarship;
+			}	 
+			if (p.education[educ].level == '3'){ 
+			
+				m.NOS2 = p.education[educ].schoolName;
+				m.DEGREECOURSE2 = degreeDescription.degreeTitle + '/' + courseDescription.courseTitle ;
+				m.YEARGRADUATED2 = p.education[educ].yearGraduated;
+				m.HIGHESTGRADE2 = p.education[educ].highestGrade;
+				m.EBFROM2 = Ext.Date.format(new Date(p.education[educ].fromDate),'m/d/Y');
+				m.EBTO2 = Ext.Date.format(new Date(p.education[educ].toDate),'m/d/Y');
+				m.EBSCHOLARSHIP2 = p.education[educ].scholarship;
 			}
-		} */
-		//OTHER INFO
-		//MATIONAL REMARKS
-		if (p.national == true) {
-			m.NATIONAL = p.nationalRemarks;
-		}
-		else {
-			 m.NO0 = p.national; 
-		}
-		//LOCAL REMARKS
-		if (p.local == true){
-			m.LOCAL = p.localRemarks;
-		}
-		else {
-			m.NO1 = p.local;
-		}
-		//CHARGED REMAARKS
-		if (p.charged == true){
-			m.CHARGED = p.chargedRemarks;
-		}
-		else {
-			m.NO2 = p.charged;
-		}
-		//OFFENSE REMARKS
-		if (p.offense == true){
-			m.OFFENSE = p.offenseRemarks;
-		}
-		else {
-			m.NO3 = p.offense;
-		}
-		//violation
-		if (p.violation == true){
-			m.VIOLATION = p.violationRemarks;
-		}
-		else {
-			m.NO4 = p.violation;
-		}
-		//separated
-		if (p.separated == true){
-			m.SEPARATED = p.separatedRemarks;
-		}
-		else {
-			m.NO5 = p.separated;
-		}
-		//candidate
-		if (p.candidate == true){
-			m.CANDIDATE = p.candidateRemarks;
-		}
-		else {
-			m.NO6 = p.candidate;
-		}
-		//indigenous
-		if (p.indigenous == true){
-			m.INDIGENOUS = p.indigenousRemarks;
-		}
-		else {
-			m.NO7 = p.indigenous;
-		}
-		//abled
-		if (p.abled == true){
-			m.ABLED = p.abledRemarks;
-		}
-		else {
-			m.NO8 = p.abled;
-		}
-		//solo
-		if (p.solo == true){
-			m.SOLO = p.soloRemarks;
-		}
-		else {
-			m.NO9 = p.solo;
-		}
-		//SEX	
-		 if (p.sex == '1') {
-			m.PIM = p.sex;
-		}
-			if (p.sex == '2') {
-			m.PIF = p.sex;
-		}
-		//CIVIL STATUS
-		 if (p.civilStatus == '1') {
-			m.CSS = p.civilStatus;
-		}
-		if (p.civilStatus == '2') {
-		m.CSM = p.civilStatus;
-		}
-		if (p.civilStatus == '3') {
-			m.CSSE = p.civilStatus;
-		}
-		if (p.civilStatus == '4') {
-			m.CSW = p.civilStatus;
-		}
-		//eligibility
+			 if (p.education[educ].level == '2'){	
+				m['NOSCOL' + colcntr] = p.education[educ].schoolName;
+				m['COLDEGREECOURSE' + colcntr] = degreeDescription.degreeTitle + '/' + courseDescription.courseTitle ;
+				m['COLYEARGRADUATED' + colcntr] = p.education[educ].yearGraduated;
+				m['COLHIGHESTGRADE' + colcntr] = p.education[educ].highestGrade;
+				m['COLEBFROM' + colcntr] =Ext.Date.format(new Date(p.education[educ].fromDate),'m/d/Y');
+				m['COLEBTO' + colcntr] = Ext.Date.format(new Date(p.education[educ].toDate),'m/d/Y');
+				m['COLEBSCHOLARSHIP' +colcntr] = p.education[educ].scholarship;
+				colcntr=colcntr+1;
+			} 
+			
+			 if (p.education[educ].level == '1'){	
+			 console.log(pgcntr);
+				m['SGNOS' + pgcntr] = p.education[educ].schoolName;
+				m['SGDEG' + pgcntr] = degreeDescription.degreeTitle + '/' + courseDescription.courseTitle ;
+				m['SGYEAR' + pgcntr] = p.education[educ].yearGraduated;
+				m['SGHIGH' + pgcntr] = p.education[educ].highestGrade;
+				m['SGFROM' + pgcntr] = Ext.Date.format(new Date(p.education[educ].fromDate),'m/d/Y');
+				m['SGTO' + pgcntr] = Ext.Date.format(new Date(p.education[educ].toDate),'m/d/Y');
+				m['SGSCHOLAR' + pgcntr] = p.education[educ].scholarship;	
+				pgcntr=pgcntr+1;				
+			} 
+			
+		} 
+		//ELIGIBILITY
 		for(var elig in p.eligibility){
 			m['CSE' + elig] = p.eligibility[elig].eligTitle;
 			m['RATING' + elig] = p.eligibility[elig].eligRating;
@@ -808,7 +761,6 @@ Ext.define('Wizard', {
 			m['WESA' + work] = p.experience[work].wrkExAppt;
 			m['WEGS' + work] = p.experience[work].wrkExGovServ;
 		}	
-		
 		//VOLUNTARY WORK
 		for(var volwork in p.workExperience){
 			m['VWNA' + volwork] = p.workExperience[volwork].VwName;
@@ -816,8 +768,8 @@ Ext.define('Wizard', {
 			m['VWTO' + volwork] = p.workExperience[volwork].VwTo;
 			m['VWNOH' + volwork] = p.workExperience[volwork].VwNumbers;
 			m['VWPNW' + volwork] = p.workExperience[volwork].VwPosition;			
-		}		
-		//traning program
+		}	
+		//TRAINING
 		for(var trainings in p.training){
 			m['TPTOS' + trainings] = p.training[trainings].titleOfSeminar;
 			m['TPFROM' + trainings] = Ext.Date.format(new Date(p.training[trainings].trainingFrom),'m/d/Y');
@@ -825,26 +777,144 @@ Ext.define('Wizard', {
 			m['TPNOH' + trainings] = p.training[trainings].numberOfHours;
 			m['TPCS' + trainings] = p.training[trainings].conductedBy;			
 		}
-	
-		//skills
+		//SKILLS
 		for(var skill in p.skills){
 			m['OISS' + skill] = p.skills[skill].sSkills;
 			m['OINDR' + skill] = p.skills[skill].nonacademicRecognition;
 			m['OIMA' + skill] = p.skills[skill].membershipsOrganization;
 		}
-		//charactger reference
+		//RECOGNITION
+		for (var reg in p.recognition){
+			m['OINDR' + reg] = p.recognition[reg].recog;
+		} 
+		//ORGANIZTION
+		for (var orgs in p.organization){
+			m['OIMA' + orgs] = p.organization[orgs].org;
+		}
+		
+		//OTHER INFO
+		if (p.national == true) {
+			m.YES0 = "On";
+			m.NO0 = "Off";
+			m.NATIONAL = p.nationalRemarks;
+		}
+		else {
+			m.YES0 = "off";
+			m.NO0 = "On";
+		}
+		
+		if (p.local == true){
+			m.YES1 = "On";
+			m.NO1 = "Off";
+			m.LOCAL = p.localRemarks;
+		}
+		else {
+			m.YES1 = "off";
+			m.NO1 = "On";
+		}
+		
+		//CHARGED REMAARKS
+		if (p.charged == true){
+			m.YES2 = "On";
+			m.NO2 = "Off";
+			m.CHARGED = p.chargedRemarks;
+		}
+		else {
+			m.YES2 = "off";
+			m.NO2 = "On";
+		}
+		//OFFENSE REMARKS
+		if (p.offense == true){
+			m.YES3 = "On";
+			m.NO3 = "Off";	
+			m.OFFENSE = p.offenseRemarks;
+		}
+		else {
+			m.YES3 = "off";
+			m.NO3 = "On";
+		}
+		//violation
+		if (p.violation == true){
+			m.YES4 = "On";
+			m.NO4 = "Off";
+			m.VIOLATION = p.violationRemarks;
+		}
+		else {
+			m.YES4 = "off";
+			m.NO4 = "On";
+		}
+		//separated
+		if (p.separated == true){
+			m.YES5 = "On";
+			m.NO5 = "Off";
+			m.SEPARATED = p.separatedRemarks;
+		}
+		else {
+			m.YES5 = "off";
+			m.NO5 = "On";
+		}
+		//candidate
+		if (p.candidate == true){
+			m.YES6 = "On";
+			m.NO6 = "Off";
+			m.CANDIDATE = p.candidateRemarks;
+		}
+		else {
+			m.YES6 = "off";
+			m.NO6 = "On";
+		}
+		//indigenous
+		if (p.indigenous == true){
+			m.YES7 = "On";
+			m.NO7 = "Off";
+			m.INDIGENOUS = p.indigenousRemarks;
+		}
+		else {
+			m.YES7 = "off";
+			m.NO7 = "On";
+		}
+		//abled
+		if (p.abled == true){
+			m.YES8 = "On";
+			m.NO8 = "Off";
+			m.ABLED = p.abledRemarks;
+		}
+		else {
+			m.YES8 = "off";
+			m.NO8 = "On";
+		}
+		//solo
+		if (p.solo == true){
+			m.YES9 = "On";
+			m.NO9 = "Off";
+			m.SOLO = p.soloRemarks;
+		}
+		else {
+			m.YES9 = "off";
+			m.NO9 = "On";
+		}
+		//SEX	
+		 if (p.sex == '1') {
+			m.PIM = "Off";
+			m.PIF = "On";
+		}
+		else if (p.sex == '2') {
+			m.PIF = "Off";
+			m.PIM = "On";
+		}
+		
+		//CHARACTER REFERENCE
 		for(var character in p.charReference){
 			m['RN' + character] = p.charReference[character].cName;
 			m['RA' + character] = p.charReference[character].cAdd;
 			m['RTO' + character] = p.charReference[character].cNum;
 		}
-		//education
 		
-		// children		
-		for(var child in p.children){
-			m['FBNOC' + child] = p.children[child].childName;
-			m['FBDOB' + child] = Ext.Date.format(new Date(p.children[child].birthDate),'m/d/Y');
-		}
+		//TAX
+		m.CTCN = p.taxNo;
+		m.OIIA = p.issuedAt;
+		m.OIIO = Ext.Date.format(new Date(p.issuedDate), 'm/d/Y');
+		m.DATEACCOMPLISHED = Ext.Date.format(new Date(p.dateAccomplished), 'm/d/Y');
 		
 		return JSON.stringify(m);
 	},
@@ -1770,7 +1840,6 @@ Ext.define('Wizard', {
 							},
 							renderer: function(val){
 								var ref = Ext.data.StoreManager.lookup('storeDegree');
-								//console.log(ref);
 								index = ref.findExact('degreeCode',val); 
 								if (index != -1){
 									rs = ref.getAt(index).data; 
@@ -2095,7 +2164,13 @@ Ext.define('Wizard', {
 						{ 
 							header: '<center>MONTHLY<br>SALARY<\center>', 
 								dataIndex: 'workExMnth', 
-								editor: 'textfield', 
+								editor   : {xtype:'numberfield', 
+									minValue:0,
+									// Remove spinner buttons, and arrow key and mouse wheel listeners
+									hideTrigger: true,
+									keyNavEnabled: false,
+									mouseWheelEnabled: false
+								},
 								fixed:true, 
 								menuDisabled:true, 
 								sortable:false,
@@ -2719,22 +2794,25 @@ Ext.define('Wizard', {
 							],
 							getValue: function(){
 								var me = this;
-								return me.down('#radio1').getValue();
+								if (me.down('#radio1').getValue()==true)
+								{
+									return me.down('#radio1').getValue();
+								}
+								else if (me.down('#radio2').getValue()==true)
+								{
+									return me.down('#radio2').getValue();
+								}
 							},
 							setValue: function(value){
 								var me = this;
 								if(value=='1')
 								{
 									me.down('#radio1').setValue(true);
-									var insert = '1';
-									me.down('#radio1').setValue(insert);
-									console.log(me.down('#radio1').getValue());
+								
 								}
 								else if(value=='0')
 								{
-									var x = me.down('#radio2').setValue(value);
-									//var insert = '0';
-									me.down('#radio2').checked=true;
+									me.down('#radio2').setValue(true);
 									
 								}
 							}

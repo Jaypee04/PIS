@@ -45,6 +45,7 @@ var config = {
 	password: 'pis',
 	server: '192.168.8.16',
 	database: 'PIS'
+	
 };
 
 //=============== START ===============//
@@ -391,630 +392,643 @@ function setRoutes(){
 			
 			var p = req.body.personnelInfo;
 			async.series([
+				//Delete CHILD
+				function(callback){	
+					var paramDef= {
+						'NamriaID': mssql.VarChar(50)
+					};
+					var sql="DELETE FROM CHILD WHERE EMP_ID=@NamriaID";
+					
+					var values = {
+						NamriaID:p.NID
+					};
+					query2(	connection, 
+						sql, 
+						paramDef, 
+						values,
+						function(err, rs){
+							callback();
+					});
+					console.log('CHILD: Deleted Successfully');
+				},
 				
-				async.series([
-							
-					//Delete CHILD
-					function(callback){	
-						var paramDef= {
-							'NamriaID': mssql.VarChar(50)
-						};
-						var sql="DELETE FROM CHILD WHERE EMP_ID=@NamriaID";
-						
-						var values = {
-							NamriaID:p.NID
-						};
-						query2(	connection, 
-							sql, 
-							paramDef, 
-							values,
-							function(err, rs){
-								callback();
-						});
-						console.log('CHILD: Deleted Successfully');
-					},
+				//Delete EDUC
+				function(callback){	
+					var paramDef= {
+						'NamriaID': mssql.VarChar(50)
+					};
+					var sql="DELETE FROM EDUC WHERE EMP_ID=@NamriaID";
 					
-					//Delete EDUC
-					function(callback){	
-						var paramDef= {
-							'NamriaID': mssql.VarChar(50)
-						};
-						var sql="DELETE FROM EDUC WHERE EMP_ID=@NamriaID";
-						
-						var values = {
-							NamriaID:p.NID
-						};
-						query2(	connection, 
-							sql, 
-							paramDef, 
-							values,
-							function(err, rs){
-								callback();
-						});
-						console.log('EDUC: Deleted Successfully');
-					},
+					var values = {
+						NamriaID:p.NID
+					};
+					query2(	connection, 
+						sql, 
+						paramDef, 
+						values,
+						function(err, rs){
+							callback();
+					});
+					console.log('EDUC: Deleted Successfully');
+				},
+				
+				//Delete ELIG
+				function(callback){	
+					var paramDef= {
+						'NamriaID': mssql.VarChar(50)
+					};
+					var sql="DELETE FROM ELIG WHERE EMP_ID=@NamriaID";
 					
-					//Delete ELIG
-					function(callback){	
-						var paramDef= {
-							'NamriaID': mssql.VarChar(50)
-						};
-						var sql="DELETE FROM ELIG WHERE EMP_ID=@NamriaID";
-						
-						var values = {
-							NamriaID:p.NID
-						};
-						query2(	connection, 
-							sql, 
-							paramDef, 
-							values,
-							function(err, rs){
-								callback();
-						});
-						console.log('ELIG: Deleted Successfully');
-					},
+					var values = {
+						NamriaID:p.NID
+					};
+					query2(	connection, 
+						sql, 
+						paramDef, 
+						values,
+						function(err, rs){
+							callback();
+					});
+					console.log('ELIG: Deleted Successfully');
+				},
+				
+				//Delete SERV
+				function(callback){	
+					var paramDef= {
+						'NamriaID': mssql.VarChar(50)
+					};
+					var sql="DELETE FROM SERV WHERE EMP_ID=@NamriaID";
 					
-					//Delete SERV
-					function(callback){	
-						var paramDef= {
-							'NamriaID': mssql.VarChar(50)
-						};
-						var sql="DELETE FROM SERV WHERE EMP_ID=@NamriaID";
-						
-						var values = {
-							NamriaID:p.NID
-						};
-						query2(	connection, 
-							sql, 
-							paramDef, 
-							values,
-							function(err, rs){
-								callback();
-						});
-						console.log('SERV: Deleted Successfully');
-					},
+					var values = {
+						NamriaID:p.NID
+					};
+					query2(	connection, 
+						sql, 
+						paramDef, 
+						values,
+						function(err, rs){
+							callback();
+					});
+					console.log('SERV: Deleted Successfully');
+				},
+				
+				//Delete VOL_ORG
+				function(callback){	
+					var paramDef= {
+						'NamriaID': mssql.VarChar(50)
+					};
+					var sql="DELETE FROM VOL_ORG WHERE EMP_ID=@NamriaID";
 					
-					//Delete TRAINEMP
-					function(callback){	
-						var paramDef= {
-							'NamriaID': mssql.VarChar(50)
-						};
-						var sql="DELETE FROM TRAINEMP WHERE EMP_ID=@NamriaID";
-						
-						var values = {
-							NamriaID:p.NID
-						};
-						query2(	connection, 
-							sql, 
-							paramDef, 
-							values,
-							function(err, rs){
-								callback();
-						});
-						console.log('TRAINEMP: Deleted Successfully');
-					},
+					var values = {
+						NamriaID:p.NID
+					};
+					query2(	connection, 
+						sql, 
+						paramDef, 
+						values,
+						function(err, rs){
+							callback();
+					});
+					console.log('VOL_ORG: Deleted Successfully');
+				},
+				
+				//Delete TRAINEMP
+				function(callback){	
+					var paramDef= {
+						'NamriaID': mssql.VarChar(50)
+					};
+					var sql="DELETE FROM TRAINEMP WHERE EMP_ID=@NamriaID";
 					
-					//Delete SP_SKILL
-					function(callback){	
-						var paramDef= {
-							'NamriaID': mssql.VarChar(50)
-						};
-						var sql="DELETE FROM SP_SKILL WHERE EMP_ID=@NamriaID";
-						
-						var values = {
-							NamriaID:p.NID
-						};
-						query2(	connection, 
-							sql, 
-							paramDef, 
-							values,
-							function(err, rs){
-								callback();
-						});
-						console.log('SP_SKILL: Deleted Successfully');
-					}, 
+					var values = {
+						NamriaID:p.NID
+					};
+					query2(	connection, 
+						sql, 
+						paramDef, 
+						values,
+						function(err, rs){
+							callback();
+					});
+					console.log('TRAINEMP: Deleted Successfully');
+				},
+				
+				//Delete SP_SKILL
+				function(callback){	
+					var paramDef= {
+						'NamriaID': mssql.VarChar(50)
+					};
+					var sql="DELETE FROM SP_SKILL WHERE EMP_ID=@NamriaID";
 					
-					//Delete NON_ACAD
-					function(callback){	
-						var paramDef= {
-							'NamriaID': mssql.VarChar(50)
-						};
-						var sql="DELETE FROM NON_ACAD WHERE EMP_ID=@NamriaID";
-						
-						var values = {
-							NamriaID:p.NID
-						};
-						query2(	connection, 
-							sql, 
-							paramDef, 
-							values,
-							function(err, rs){
-								callback();
-						});
-						console.log('NON_ACAD: Deleted Successfully');	
-					},
+					var values = {
+						NamriaID:p.NID
+					};
+					query2(	connection, 
+						sql, 
+						paramDef, 
+						values,
+						function(err, rs){
+							callback();
+					});
+					console.log('SP_SKILL: Deleted Successfully');
+				}, 
+				
+				//Delete NON_ACAD
+				function(callback){	
+					var paramDef= {
+						'NamriaID': mssql.VarChar(50)
+					};
+					var sql="DELETE FROM NON_ACAD WHERE EMP_ID=@NamriaID";
 					
-					//Delete MEM_ORG
-					function(callback){	
-						var paramDef= {
-							'NamriaID': mssql.VarChar(50)
-						};
-						var sql="DELETE FROM MEM_ORG WHERE EMP_ID=@NamriaID";
-						
-						var values = {
-							NamriaID:p.NID
-						};
-						query2(	connection, 
-							sql, 
-							paramDef, 
-							values,
-							function(err, rs){
-								callback();
-						});
-						console.log('MEM_ORG: Deleted Successfully');
-					},
+					var values = {
+						NamriaID:p.NID
+					};
+					query2(	connection, 
+						sql, 
+						paramDef, 
+						values,
+						function(err, rs){
+							callback();
+					});
+					console.log('NON_ACAD: Deleted Successfully');	
+				},
+				
+				//Delete MEM_ORG
+				function(callback){	
+					var paramDef= {
+						'NamriaID': mssql.VarChar(50)
+					};
+					var sql="DELETE FROM MEM_ORG WHERE EMP_ID=@NamriaID";
 					
-					//Delete REF
-					function(callback){	
-						var paramDef= {
-							'NamriaID': mssql.VarChar(50)
-						};
-						var sql="DELETE FROM REF WHERE EMP_ID=@NamriaID";
-						
-						var values = {
-							NamriaID:p.NID
-						};
-						query2(	connection, 
-							sql, 
-							paramDef, 
-							values,
-							function(err, rs){
-								callback();
-						});
-						console.log('REF: Deleted Successfully');
-					},  
+					var values = {
+						NamriaID:p.NID
+					};
+					query2(	connection, 
+						sql, 
+						paramDef, 
+						values,
+						function(err, rs){
+							callback();
+					});
+					console.log('MEM_ORG: Deleted Successfully');
+				},
+				
+				//Delete REF
+				function(callback){	
+					var paramDef= {
+						'NamriaID': mssql.VarChar(50)
+					};
+					var sql="DELETE FROM REF WHERE EMP_ID=@NamriaID";
 					
-					//Update PLANT (name of employee)
-					function(callback){	
-						
-						var paramDef= {
-							'NamriaID': mssql.VarChar(50),
-							'Surname': mssql.VarChar(50),
-							'Firstname': mssql.VarChar(50),
-							'Middlename': mssql.VarChar(50),
-							'Nameextension': mssql.VarChar(50)
-						};
-						var sql = MultilineWrapper(function(){/*
-						UPDATE plant
-						SET FIRST_M = @Firstname,
-						MIDDLE_M = @Middlename,
-						LAST_M = @Surname,
-						NAME_EXTENSION = @Nameextension
-						WHERE EMP_ID = @NamriaID
-						*/});
-						var values = {
-							NamriaID:p.NID,
-							Surname:p.surName,
-							Firstname:p.firstName,
-							Middlename:p.middleName,
-							Nameextension:p.nameExtension
-						};
+					var values = {
+						NamriaID:p.NID
+					};
+					query2(	connection, 
+						sql, 
+						paramDef, 
+						values,
+						function(err, rs){
+							callback();
+					});
+					console.log('REF: Deleted Successfully');
+				},  
+				
+				
+				
+				
+				//Update PLANT (name of employee)
+				function(callback){	
 					
-						query2(	connection, 
-							sql, 
-							paramDef, 
-							values,
-							function(err, rs){
-								callback();
-						});
+					var paramDef= {
+						'NamriaID': mssql.VarChar(50),
+						'Surname': mssql.VarChar(50),
+						'Firstname': mssql.VarChar(50),
+						'Middlename': mssql.VarChar(50),
+						'Nameextension': mssql.VarChar(50)
+					};
+					var sql = MultilineWrapper(function(){/*
+					UPDATE plant
+					SET FIRST_M = @Firstname,
+					MIDDLE_M = @Middlename,
+					LAST_M = @Surname,
+					NAME_EXTENSION = @Nameextension
+					WHERE EMP_ID = @NamriaID
+					*/});
+					var values = {
+						NamriaID:p.NID,
+						Surname:p.surName,
+						Firstname:p.firstName,
+						Middlename:p.middleName,
+						Nameextension:p.nameExtension
+					};
+				
+					query2(	connection, 
+						sql, 
+						paramDef, 
+						values,
+						function(err, rs){
+							callback();
+					});
 					console.log('PLANT: Updated Successfully');	
-						
-					},
 					
-					// Update EMP_DTL 
-					function(callback){	 
-						var paramDef = {
-							'DoB': mssql.Date,
-							'IDP': mssql.VarChar(mssql.MAX),
-							'PoB': mssql.VarChar(50),
-							'sex': mssql.VarChar(2),
-							'civilStatus': mssql.VarChar(50),
-							'height': mssql.Decimal(18,2),
-							'weight': mssql.Decimal(18,2),
-							'citizenship': mssql.VarChar(50),
-							'bloodType': mssql.VarChar(50),
-							'NamriaID': mssql.VarChar(50),
-							'tin': mssql.VarChar(50),
-							'GSIS': mssql.VarChar(50),
-							'PAGIBIG': mssql.VarChar(50),
-							'PHILHEALTH': mssql.VarChar(50),
-							'SSS': mssql.VarChar(50),
-							'eMail': mssql.VarChar(50),
-							'cellphone': mssql.VarChar(50),
-							'residentialSt': mssql.VarChar(50),
-							'residentialMun': mssql.VarChar(50),
-							'residentialProv': mssql.VarChar(50),
-							'residentialZip': mssql.VarChar(50),
-							'residentialTel': mssql.VarChar(50),
-							'provincialSt': mssql.VarChar(50),
-							'provincialMun': mssql.VarChar(50),
-							'provincialProv': mssql.VarChar(50),
-							'provincialZip': mssql.VarChar(50),
-							'provincialTel': mssql.VarChar(50),
-							'spouse_f': mssql.VarChar(50),
-							'spouse_m': mssql.VarChar(50),
-							'spouse_l': mssql.VarChar(50),
-							'spouse_occu': mssql.VarChar(50),
-							'spouse_empl': mssql.VarChar(50),
-							'spouse_emplAdd': mssql.VarChar(50),
-							'spouse_emplTel': mssql.VarChar(50),
-							'father_f': mssql.VarChar(50),
-							'father_m': mssql.VarChar(50),
-							'father_l': mssql.VarChar(50),
-							'mother_f': mssql.VarChar(50),
-							'mother_m': mssql.VarChar(50),
-							'mother_l': mssql.VarChar(50),
-							'tax_no': mssql.VarChar(50),
-							'tax_place': mssql.VarChar(50),
-							'tax_date': mssql.Date,
-							'date_accomplished': mssql.Date
-						};
+				},
 				
-						var sql = MultilineWrapper(function(){/*
-						UPDATE EMP_DTL
-						SET 
-							birth_date=@DoB, 
-							birth_prov=@PoB, 
-							sex_c=@sex, 
-							civil_stat=@civilStatus, 
-							height=@height, 
-							weight=@weight, 
-							blood_t=@bloodType, 
-							citizen=@citizenship, 
-							tin=@tin, 
-							gsis_id_no=@GSIS, 
-							pag_ibig=@PAGIBIG, 
-							ph_no=@PHILHEALTH, 
-							sss_no=@SSS, 
-							cel_no=@cellphone, 
-							email=@eMail, 
-							addr_st=@residentialSt, 
-							addr_mun=@residentialMun, 
-							addr_prov=@residentialProv, 
-							tel_no=@residentialTel, 
-							addr_zp=@residentialZip, 
-							paddr_st=@provincialSt, 
-							paddr_mun=@provincialMun,
-							paddr_prov=@provincialProv,
-							ptel_no=@provincialTel,
-							paddr_zp=@provincialZip, 
-							s_first=@spouse_f,
-							s_middle=@spouse_m,
-							s_last=@spouse_l,
-							spouse_occ=@spouse_occu,
-							bus_name=@spouse_empl,
-							bus_add=@spouse_emplAdd,
-							bus_tel=@spouse_emplTel, 
-							f_first=@father_f,
-							f_middle=@father_m,
-							f_last=@father_l,
-							m_first=@mother_f,
-							m_middle=@mother_m,
-							m_last=@mother_l, 
-							ctc_no=@tax_no, 
-							ctc_place=@tax_place, 
-							ctc_date=@tax_date,
-							pds_accomp=@date_accomplished 
-						WHERE emp_id=@NamriaID
-						*/});
-						
-						var dOB = new Date(p.dateOfBirth);
-						var taxdate = new Date(p.issuedDate);
-						var dateaccomplished = new Date(p.dateAccomplished);
-						var address = p.resAdd.split(',');
-						var p_address = p.perAdd.split(',');
-						var resSt = address[0];	
-						var resMun = address[1]; 
-						var resProv = address[2];
-						var provSt = p_address[0]; 
-						var provMun = p_address[1]; 
-						var provProv = p_address[2];
-						
+				// Update EMP_DTL 
+				function(callback){	 
+					var paramDef = {
+						'DoB': mssql.Date,
+						//'IDP': mssql.VarChar(mssql.MAX),
+						'PoB': mssql.VarChar(50),
+						'sex': mssql.VarChar(2),
+						'civilStatus': mssql.VarChar(50),
+						'height': mssql.Decimal(18,2),
+						'weight': mssql.Decimal(18,2),
+						'citizenship': mssql.VarChar(50),
+						'bloodType': mssql.VarChar(50),
+						'NamriaID': mssql.VarChar(50),
+						'tin': mssql.VarChar(50),
+						'GSIS': mssql.VarChar(50),
+						'PAGIBIG': mssql.VarChar(50),
+						'PHILHEALTH': mssql.VarChar(50),
+						'SSS': mssql.VarChar(50),
+						'eMail': mssql.VarChar(50),
+						'cellphone': mssql.VarChar(50),
+						'residentialSt': mssql.VarChar(50),
+						'residentialMun': mssql.VarChar(50),
+						'residentialProv': mssql.VarChar(50),
+						'residentialZip': mssql.VarChar(50),
+						'residentialTel': mssql.VarChar(50),
+						'provincialSt': mssql.VarChar(50),
+						'provincialMun': mssql.VarChar(50),
+						'provincialProv': mssql.VarChar(50),
+						'provincialZip': mssql.VarChar(50),
+						'provincialTel': mssql.VarChar(50),
+						'spouse_f': mssql.VarChar(50),
+						'spouse_m': mssql.VarChar(50),
+						'spouse_l': mssql.VarChar(50),
+						'spouse_occu': mssql.VarChar(50),
+						'spouse_empl': mssql.VarChar(50),
+						'spouse_emplAdd': mssql.VarChar(50),
+						'spouse_emplTel': mssql.VarChar(50),
+						'father_f': mssql.VarChar(50),
+						'father_m': mssql.VarChar(50),
+						'father_l': mssql.VarChar(50),
+						'mother_f': mssql.VarChar(50),
+						'mother_m': mssql.VarChar(50),
+						'mother_l': mssql.VarChar(50),
+						'tax_no': mssql.VarChar(50),
+						'tax_place': mssql.VarChar(50),
+						'tax_date': mssql.Date,
+						'date_accomplished': mssql.Date
+					};
+			
+					var sql = MultilineWrapper(function(){/*
+					UPDATE EMP_DTL
+					SET 
+						birth_date=@DoB, 
+						birth_prov=@PoB, 
+						sex_c=@sex, 
+						civil_stat=@civilStatus, 
+						height=@height, 
+						weight=@weight, 
+						blood_t=@bloodType, 
+						citizen=@citizenship, 
+						tin=@tin, 
+						gsis_id_no=@GSIS, 
+						pag_ibig=@PAGIBIG, 
+						ph_no=@PHILHEALTH, 
+						sss_no=@SSS, 
+						cel_no=@cellphone, 
+						email=@eMail, 
+						addr_st=@residentialSt, 
+						addr_mun=@residentialMun, 
+						addr_prov=@residentialProv, 
+						tel_no=@residentialTel, 
+						addr_zp=@residentialZip, 
+						paddr_st=@provincialSt, 
+						paddr_mun=@provincialMun,
+						paddr_prov=@provincialProv,
+						ptel_no=@provincialTel,
+						paddr_zp=@provincialZip, 
+						s_first=@spouse_f,
+						s_middle=@spouse_m,
+						s_last=@spouse_l,
+						spouse_occ=@spouse_occu,
+						bus_name=@spouse_empl,
+						bus_add=@spouse_emplAdd,
+						bus_tel=@spouse_emplTel, 
+						f_first=@father_f,
+						f_middle=@father_m,
+						f_last=@father_l,
+						m_first=@mother_f,
+						m_middle=@mother_m,
+						m_last=@mother_l, 
+						ctc_no=@tax_no, 
+						ctc_place=@tax_place, 
+						ctc_date=@tax_date,
+						pds_accomp=@date_accomplished 
+					WHERE emp_id=@NamriaID
+					*/});
+					
+					var dOB = new Date(p.dateOfBirth);
+					var taxdate = new Date(p.issuedDate);
+					var dateaccomplished = new Date(p.dateAccomplished);
+					var address = p.resAdd.split(',');
+					var p_address = p.perAdd.split(',');
+					var resSt = address[0];	
+					var resMun = address[1]; 
+					var resProv = address[2];
+					var provSt = p_address[0]; 
+					var provMun = p_address[1]; 
+					var provProv = p_address[2];
+					
+					var values = {
+						DoB:dOB,
+						//IDP:p.picture,
+						PoB:p.placeOfBirth, 
+						sex:p.sex, 
+						civilStatus:p.civilStatus, 
+						height:p.height, 
+						weight:p.weight, 
+						bloodType:p.bloodType, 
+						citizenship:p.citizenship, 
+						tin:p.TIN, GSIS:p.GSIS, 
+						PAGIBIG:p.PAGIBIG, 
+						PHILHEALTH:p.PHILHEALTH, 
+						SSS:p.SSS, 
+						cellphone:p.cellphone, 
+						eMail:p.eMail, 
+						residentialSt:resSt,
+						residentialMun:resMun,
+						residentialProv:resProv,
+						residentialTel:p.resTel,
+						residentialZip:p.resZip, 
+						provincialSt:provSt,
+						provincialMun:provMun,
+						provincialProv:provProv,
+						provincialTel:p.perTel,
+						provincialZip:p.perZip,
+						spouse_f:p.spFirstname,
+						spouse_m:p.spMiddlename,
+						spouse_l:p.spSurname,
+						spouse_occu:p.spOccu,
+						spouse_empl:p.spEmployer,
+						spouse_emplAdd:p.spBusAdd,
+						spouse_emplTel:p.spBusTel, 
+						father_f:p.fatFirstname,
+						father_m:p.fatMiddlename,
+						father_l:p.fatSurname,
+						mother_f:p.motFirstname,
+						mother_m:p.motMiddlename,
+						mother_l:p.motSurname, 
+						tax_no:p.taxNo,
+						tax_place:p.issuedAt,
+						tax_date:taxdate,
+						date_accomplished:dateaccomplished, 
+						NamriaID:p.NID
+					};
+
+					query2(	connection, 
+						sql, 
+						paramDef, 
+						values,
+						function(err, rs){
+							callback();
+					});
+					console.log('EMP_DTL: Updated Successfully');	
+				},
+				
+				//Update CHILD
+				function(callback){	
+					
+					var paramDef = {
+						'nameOfChild': mssql.VarChar(50),
+						'dateOfBirth': mssql.Date,
+						'NamriaID': mssql.VarChar(50)
+					};
+					
+					var sql = "INSERT INTO CHILD (EMP_ID,CHILD_NAME,CHILD_BDAY) VALUES (@NamriaID,@nameOfChild,@dateOfBirth)";
+					
+					for(var item in p.children){
+						var c = p.children[item];
+						var name = c.fullName;
+						var dob = new Date(c.dateOfBirth);
+							
 						var values = {
-							DoB:dOB,
-							IDP:p.picture,
-							PoB:p.placeOfBirth, 
-							sex:p.sex, 
-							civilStatus:p.civilStatus, 
-							height:p.height, 
-							weight:p.weight, 
-							bloodType:p.bloodType, 
-							citizenship:p.citizenship, 
-							tin:p.TIN, GSIS:p.GSIS, 
-							PAGIBIG:p.PAGIBIG, 
-							PHILHEALTH:p.PHILHEALTH, 
-							SSS:p.SSS, 
-							cellphone:p.cellphone, 
-							eMail:p.eMail, 
-							residentialSt:resSt,
-							residentialMun:resMun,
-							residentialProv:resProv,
-							residentialTel:p.resTel,
-							residentialZip:p.resZip, 
-							provincialSt:provSt,
-							provincialMun:provMun,
-							provincialProv:provProv,
-							provincialTel:p.perTel,
-							provincialZip:p.perZip,
-							spouse_f:p.spFirstname,
-							spouse_m:p.spMiddlename,
-							spouse_l:p.spSurname,
-							spouse_occu:p.spOccu,
-							spouse_empl:p.spEmployer,
-							spouse_emplAdd:p.spBusAdd,
-							spouse_emplTel:p.spBusTel, 
-							father_f:p.fatFirstname,
-							father_m:p.fatMiddlename,
-							father_l:p.fatSurname,
-							mother_f:p.motFirstname,
-							mother_m:p.motMiddlename,
-							mother_l:p.motSurname, 
-							tax_no:p.taxNo,
-							tax_place:p.issuedAt,
-							tax_date:taxdate,
-							date_accomplished:dateaccomplished, 
+							nameOfChild:name, 
+							dateOfBirth:dob, 
 							NamriaID:p.NID
 						};
-
-						query2(	connection, 
+						query2(connection, 
 							sql, 
 							paramDef, 
 							values,
 							function(err, rs){
 								callback();
 						});
-						console.log('EMP_DTL: Updated Successfully');	
+						
 					}
-				],
-				function (err) {
-					if(err)
-					{res.json(err);}
-					//console.log(err);
-					//res.json({success: true, failed:err});
-				}),
+					console.log('CHILD: Updated Successfully');	
+				},
 				
-				async.series([
-					//Update CHILD
-					function(callback){	
+				//Update EDUC
+				function(callback){	
+				
+					var paramDef = {
+						'LevelCode': mssql.VarChar(1),
+						'School': mssql.VarChar(50),
+						'DegreeCode': mssql.VarChar(2),
+						'CourseCode': mssql.VarChar(4),
+						'UnitsEarned': mssql.VarChar(10),
+						'StartYear': mssql.VarChar(4),
+						'EndYear': mssql.VarChar(4),
+						'HonorsReceived': mssql.VarChar(25),
+						'YearGraduated': mssql.VarChar(4),
+						'NamriaID': mssql.VarChar(7)
 						
-						var paramDef = {
-							'nameOfChild': mssql.VarChar(50),
-							'dateOfBirth': mssql.Date,
-							'NamriaID': mssql.VarChar(50)
+					};
+					
+					var sql = MultilineWrapper(function(){/*
+					INSERT INTO EDUC 
+					(EMP_ID,
+					LEVEL_C,
+					INSTITUTE, 
+					DEGREE_C,
+					COURSE_C,
+					[UNITS],
+					START_YEAR,
+					END_YEAR,
+					HONORS_T,
+					Y_GRAD) 
+					VALUES 
+					(@NamriaID,
+					@LevelCode,
+					@School,
+					@DegreeCode,
+					@CourseCode,
+					@UnitsEarned,
+					@StartYear,
+					@EndYear,
+					@HonorsReceived,
+					@YearGraduated)
+					*/});
+					
+					for(var item in p.education){
+						var e = p.education[item];
+						/* var levelCode = e.level;
+						var school = e.schoolName;
+						var degreeCode = e.degree;
+						var courseCode = e.course;
+						var CseDor = e.yearGraduated;
+						var CareerDate = e.highestGrade;
+						var CareerDate = e.fromDate;
+						var CareerDate = e.toDate;
+						var CareerDate = e.scholarship; */
+						var values = {
+							LevelCode: e.level, 
+							School: e.schoolName, 
+							DegreeCode: e.degree, 
+							CourseCode: e.course,
+							UnitsEarned: e.highestGrade,
+							StartYear: e.fromDate,
+							EndYear: e.toDate,
+							HonorsReceived: e.scholarship,
+							YearGraduated: e.yearGraduated,
+							NamriaID:p.NID
 						};
-						
-						var sql = "INSERT INTO CHILD (EMP_ID,CHILD_NAME,CHILD_BDAY) VALUES (@NamriaID,@nameOfChild,@dateOfBirth)";
-						
-						for(var item in p.children){
-							var c = p.children[item];
-							var name = c.fullName;
-							var dob = new Date(c.dateOfBirth);
-								
-							var values = {
-								nameOfChild:name, 
-								dateOfBirth:dob, 
-								NamriaID:p.NID
-							};
-							query2(connection, 
-								sql, 
-								paramDef, 
-								values,
-								function(err, rs){
-									callback();
-							});
-							
-							//console.log(name);
+						query2(connection, 
+							sql, 
+							paramDef, 
+							values,
+							function(err, rs){
+								callback();
+						});
+					}
+				
+					console.log('EDUC: Updated Successfully');	
+				},
+				
+				//Update ELIG
+				function(callback){	
+					var paramDef = {
+						'careerTitle': mssql.NVarChar(35),
+						'careerRating': mssql.Decimal(18,2),
+						'careerPlace': mssql.NVarChar(30),
+						'careerDateMM': mssql.NVarChar(2),
+						'careerDateDD': mssql.NVarChar(2),
+						'careerDateYY': mssql.NVarChar(4),
+						'NamriaID': mssql.VarChar(50),
+						'licenseNumber': mssql.NVarChar(30),
+						'dateOfRelease': mssql.Date
+					};
+					
+					var sql = MultilineWrapper(function(){/*
+					INSERT INTO ELIG 
+					(EMP_ID,
+					EXAM_T,
+					[RATING], 
+					EXAM_PLACE,
+					EXAM_MM,
+					EXAM_DD,
+					EXAM_YY,
+					LIC_NO,
+					LIC_DATE) 
+					VALUES 
+					(@NamriaID,
+					@careerTitle,
+					@careerRating,
+					@careerPlace,
+					@careerDateMM,
+					@careerDateDD,
+					@careerDateYY,
+					@licenseNumber,
+					@dateOfRelease)
+					*/});
+					
+					for(var item in p.eligibility){
+						var e = p.eligibility[item];
+						var CseCareer = e.eligTitle;
+						var CseRating = e.eligRating;
+						var CsePlace = e.eligPlace;
+						var CseNumber = e.eligLicenseNumber;
+						var CseDor = new Date(e.eligDateOfRelease);
+						var CareerDate = e.eligDate;
+						if (e.eligDate == null)
+						{
+							var CseMonth = '';
+							var CseDay= '';
+							var CseYear= '';
 						}
-						console.log('CHILD: Updated Successfully');	
-					},
-					
-					//Update EDUC
-					function(callback){	
-					
-						var paramDef = {
-							'LevelCode': mssql.VarChar(1),
-							'School': mssql.VarChar(50),
-							'DegreeCode': mssql.VarChar(2),
-							'CourseCode': mssql.VarChar(4),
-							'UnitsEarned': mssql.VarChar(10),
-							'StartYear': mssql.VarChar(4),
-							'EndYear': mssql.VarChar(4),
-							'HonorsReceived': mssql.VarChar(25),
-							'YearGraduated': mssql.VarChar(4),
-							'NamriaID': mssql.VarChar(7)
-							
-						};
-						
-						var sql = MultilineWrapper(function(){/*
-						INSERT INTO EDUC 
-						(EMP_ID,
-						LEVEL_C,
-						INSTITUTE, 
-						DEGREE_C,
-						COURSE_C,
-						[UNITS],
-						START_YEAR,
-						END_YEAR,
-						HONORS_T,
-						Y_GRAD) 
-						VALUES 
-						(@NamriaID,
-						@LevelCode,
-						@School,
-						@DegreeCode,
-						@CourseCode,
-						@UnitsEarned,
-						@StartYear,
-						@EndYear,
-						@HonorsReceived,
-						@YearGraduated)
-						*/});
-						
-						for(var item in p.education){
-							var e = p.education[item];
-							/* var levelCode = e.level;
-							var school = e.schoolName;
-							var degreeCode = e.degree;
-							var courseCode = e.course;
-							var CseDor = e.yearGraduated;
-							var CareerDate = e.highestGrade;
-							var CareerDate = e.fromDate;
-							var CareerDate = e.toDate;
-							var CareerDate = e.scholarship; */
-							//console.log(e.schoolName);
-							var values = {
-								LevelCode: e.level, 
-								School: e.schoolName, 
-								DegreeCode: e.degree, 
-								CourseCode: e.course,
-								UnitsEarned: e.highestGrade,
-								StartYear: e.fromDate,
-								EndYear: e.toDate,
-								HonorsReceived: e.scholarship,
-								YearGraduated: e.yearGraduated,
-								NamriaID:p.NID
-							};
-							query2(connection, 
-								sql, 
-								paramDef, 
-								values,
-								function(err, rs){
-									callback();
-							});
+						else if (e.eligDate != null)
+						{
+							var cseDate = e.eligDate.split('/');	
+							var CseMonth = cseDate[0];
+							var CseDay= cseDate[1];
+							var CseYear= cseDate[2];
 						}
-					
-						console.log('EDUC: Updated Successfully');	
-					},
-					
-					//Update ELIG
-					function(callback){	
-						var paramDef = {
-							'careerTitle': mssql.NVarChar(35),
-							'careerRating': mssql.Decimal(18,2),
-							'careerPlace': mssql.NVarChar(30),
-							'careerDateMM': mssql.NVarChar(2),
-							'careerDateDD': mssql.NVarChar(2),
-							'careerDateYY': mssql.NVarChar(4),
-							'NamriaID': mssql.VarChar(50),
-							'licenseNumber': mssql.NVarChar(30),
-							'dateOfRelease': mssql.Date
+						
+						var values = {
+							careerTitle: CseCareer, 
+							careerRating: CseRating, 
+							careerPlace: CsePlace, 
+							careerDateMM: CseMonth,
+							careerDateDD: CseDay,
+							careerDateYY: CseYear,
+							dateOfRelease: CseDor,
+							licenseNumber: CseNumber,
+							NamriaID:p.NID
 						};
-						
-						var sql = MultilineWrapper(function(){/*
-						INSERT INTO ELIG 
-						(EMP_ID,
-						EXAM_T,
-						[RATING], 
-						EXAM_PLACE,
-						EXAM_MM,
-						EXAM_DD,
-						EXAM_YY,
-						LIC_NO,
-						LIC_DATE) 
-						VALUES 
-						(@NamriaID,
-						@careerTitle,
-						@careerRating,
-						@careerPlace,
-						@careerDateMM,
-						@careerDateDD,
-						@careerDateYY,
-						@licenseNumber,
-						@dateOfRelease)
-						*/});
-						
-						for(var item in p.eligibility){
-							var e = p.eligibility[item];
-							var CseCareer = e.eligTitle;
-							var CseRating = e.eligRating;
-							var CsePlace = e.eligPlace;
-							var CseNumber = e.eligLicenseNumber;
-							var CseDor = new Date(e.eligDateOfRelease);
-							var CareerDate = e.eligDate;
-							//console.log(e.eligDate);
-							if (e.eligDate == null)
-							{
-								var CseMonth = '';
-								var CseDay= '';
-								var CseYear= '';
-							}
-							else if (e.eligDate != null)
-							{
-								var cseDate = e.eligDate.split('/');	
-								var CseMonth = cseDate[0];
-								var CseDay= cseDate[1];
-								var CseYear= cseDate[2];
-							}
-							
-							var values = {
-								careerTitle: CseCareer, 
-								careerRating: CseRating, 
-								careerPlace: CsePlace, 
-								careerDateMM: CseMonth,
-								careerDateDD: CseDay,
-								careerDateYY: CseYear,
-								dateOfRelease: CseDor,
-								licenseNumber: CseNumber,
-								NamriaID:p.NID
-							};
-							query2(connection, 
-								sql, 
-								paramDef, 
-								values,
-								function(err, rs){
-									callback();
-							});
-						}
-						console.log('ELIG: Updated Successfully');	
-					},
+						query2(connection, 
+							sql, 
+							paramDef, 
+							values,
+							function(err, rs){
+								callback();
+						});
+					}
+					console.log('ELIG: Updated Successfully');	
+				},
+				
+				
+				
+				
+				//Update SERV
+				function(callback){	
+					var paramDef = {
+						'StartDate': mssql.Date,
+						'EndDate': mssql.Date,
+						'Position': mssql.VarChar(50),
+						'Office': mssql.VarChar(50),
+						'Salary': mssql.Float,
+						'Status': mssql.VarChar(50),
+						'YESNO': mssql.VarChar(4),
+						'Grade': mssql.VarChar(50),
+						'NamriaID': mssql.VarChar(50)
+					};
 					
-					//Update SERV
-					function(callback){	
-						var paramDef = {
-							'StartDate': mssql.Date,
-							'EndDate': mssql.Date,
-							'Position': mssql.VarChar(50),
-							'Office': mssql.VarChar(50),
-							'Salary': mssql.Float,
-							'Status': mssql.VarChar(50),
-							'YESNO': mssql.VarChar(4),
-							'Grade': mssql.VarChar(50),
-							'NamriaID': mssql.VarChar(50)
-						};
-						
-						var sql = MultilineWrapper(function(){/*
-						INSERT INTO SERV 
-						(EMP_ID,
-						START_D,
-						END_D, 
-						POS_TITLE,
-						OFFICE_M,
-						SALARY_A,
-						STAT_APPT,
-						GOV_PRIV,
-						SALARY_G) 
-						VALUES 
-						(@NamriaID,
-						@StartDate,
-						@EndDate,
-						@Position,
-						@Office,
-						@Salary,
-						@Status,
-						@YESNO,
-						@Grade)
-						*/});
-						
+					var sql = MultilineWrapper(function(){/*
+					INSERT INTO SERV 
+					(EMP_ID,
+					START_D,
+					END_D, 
+					POS_TITLE,
+					OFFICE_M,
+					SALARY_A,
+					STAT_APPT,
+					GOV_PRIV,
+					SALARY_G) 
+					VALUES 
+					(@NamriaID,
+					@StartDate,
+					@EndDate,
+					@Position,
+					@Office,
+					@Salary,
+					@Status,
+					@YESNO,
+					@Grade)
+					*/});
+					if (p.experience != null)
+					{
 						for(var item in p.experience){
 							var e = p.experience[item];
 							
@@ -1037,24 +1051,31 @@ function setRoutes(){
 									callback();
 							});
 						}
-						
-						console.log('SERV: Updated Successfully');	
-					},
+					}
+					else if (p.experience == null)
+					{
+						callback();
+					}
 					
-					//Update TRAINEMP
-					function(callback){	
-						console.log('TRAINEMP: Updated Successfully');	
-					},
 					
-					//Update SP_SKILL
-					function(callback){	
-						
-						var paramDef = {
-							'specialSkill': mssql.VarChar(100),
-							'NamriaID': mssql.VarChar(50)
-						};
-						
-						var sql = "INSERT INTO sp_skill (EMP_ID,[skills]) VALUES (@NamriaID,@specialSkill)";
+					console.log('SERV: Updated Successfully');	
+				},
+				
+				
+				
+				
+				
+				//Update SP_SKILL
+				function(callback){	
+					
+					var paramDef = {
+						'specialSkill': mssql.VarChar(100),
+						'NamriaID': mssql.VarChar(50)
+					};
+					
+					var sql = "INSERT INTO sp_skill (EMP_ID,[skills]) VALUES (@NamriaID,@specialSkill)";
+					if (p.skills != null)
+					{
 						for(var item in p.skills){
 							var ss = p.skills[item];
 							var spSkills = ss.sSkills;
@@ -1070,188 +1091,23 @@ function setRoutes(){
 								function(err, rs){
 									callback();
 							});
-							//console.log(spSkills);
-						}
-						console.log('SP_SKILL: Updated Successfully');	
-					}, 
-									
-					//Update MEM_ORG
-					function(callback){	
-						
-						var paramDef = {
-							'Organization': mssql.VarChar(100),
-							'NamriaID': mssql.VarChar(50)
-						};
-						
-						var sql = "INSERT INTO MEM_ORG (EMP_ID,A_ORG) VALUES (@NamriaID,@Organization)";
-						
-						for(var item in p.organization){
-							var o = p.organization[item];
-							var org = o.org;
 							
-							var values = {
-								Organization:org, 
-								NamriaID:p.NID
-							};
-							query2(connection, 
-								sql, 
-								paramDef, 
-								values,
-								function(err, rs){
-									callback();
-							});
-							//console.log(org);
 						}
-						console.log('MEM_ORG: Updated Successfully');	
-					},
-					
-					//Update CHK_LIST
-					function(callback){	
-						var paramDef = {
-							'National': mssql.VarChar(50),
-							'NationalRemarks': mssql.VarChar(50),
-							'Local': mssql.VarChar(50),
-							'LocalRemarks': mssql.VarChar(50),
-							'Charged': mssql.VarChar(50),
-							'ChargedRemarks': mssql.VarChar(50),
-							'Offense': mssql.VarChar(50),
-							'OffenseRemarks': mssql.VarChar(50),
-							'Violation': mssql.VarChar(50),
-							'ViolationRemarks': mssql.VarChar(50),
-							'Separated': mssql.VarChar(50),
-							'SeparatedRemarks': mssql.VarChar(50),
-							'Candidate': mssql.VarChar(50),
-							'CandidateRemarks': mssql.VarChar(50),
-							'Indigenous': mssql.VarChar(50),
-							'IndigenousRemarks': mssql.VarChar(50),
-							'Abled': mssql.VarChar(50),
-							'AbledRemarks': mssql.VarChar(50),
-							'Solo': mssql.VarChar(50),
-							'SoloRemarks': mssql.VarChar(50),
-							'NamriaID': mssql.VarChar(255)
-						};
-						
-						var sql = MultilineWrapper(function(){/*
-						UPDATE CHK_LIST SET 
-						deg_3=@National,
-						deg_3r=@NationalRemarks,
-						deg_4=@Local,
-						deg_4r=@LocalRemarks,
-						charged=@Charged,
-						charged_r=@ChargedRemarks,
-						admin=@Offense,
-						admin_r=@OffenseRemarks,
-						crime=@Violation,
-						crime_r=@ViolationRemarks,
-						retire=@Separated,
-						retire_r=@SeparatedRemarks,
-						elect=@Candidate,
-						elect_r=@CandidateRemarks,
-						ind_g=@Indigenous,
-						ind_r=@IndigenousRemarks,
-						dif_a=@Abled,
-						dif_r=@AbledRemarks,
-						solo=@Solo,
-						solo_r=@SoloRemarks,
-						WHERE EMP_ID=@NamriaID
-						*/});
-						
-						var values = {
-							National:p.national,
-							NationalRemarks:p.nationalRemarks,
-							Local:p.local,
-							LocalRemarks:p.localRemarks,
-							Charged:p.charged,
-							ChargedRemarks:p.chargedRemarks,
-							Offense:p.offense,
-							OffenseRemarks:p.offenseRemarks,
-							Violation:p.violation,
-							ViolationRemarks:p.violationRemarks,
-							Separated:p.separated,
-							SeparatedRemarks:p.separatedRemarks,
-							Candidate:p.candidate,
-							CandidateRemarks:p.candidateRemarks,
-							Indigenous:p.indigenous,
-							IndigenousRemarks:p.indigenousRemarks,
-							Abled:p.abled,
-							AbledRemarks:p.abledRemarks,
-							Solo:p.solo,
-							SoloRemarks:p.soloRemarks,
-							NamriaID:p.NID
-						};
-						query2(connection, 
-							sql, 
-							paramDef, 
-							values,
-							function(err, rs){
-								callback();
-						});
-						
-						console.log('CHK_LIST: Updated Successfully');	
-					},
-					
-					//Update REF
-					function(callback){	
-						
-						var paramDef = {
-							'referenceName': mssql.VarChar(50),
-							//'referenceAddress': mssql.VarChar(100),
-							//'referenceMun': mssql.VarChar(100),
-							//'referenceProv': mssql.VarChar(100),
-							'referenceTel': mssql.VarChar(50),
-							'NamriaID': mssql.VarChar(50)
-						};
-						
-						var sql = MultilineWrapper(function(){/*
-						INSERT INTO REF 
-						(EMP_ID,REFNAME,TEL_NO) 
-						VALUES 
-						(@NamriaID,@referenceName,@referenceTel)
-						*/});
-						console.log('REFERENCE: '+p.charReference);
-						for(var item in p.charReference){
-							var charRef = p.charReference[item];
-							/* var address = charRef.cAdd.split(',');	
-							var refAdd = address[0];
-							var refMun = address[1];
-							var refProv = address[2]; */
-							
-							var values = {
-								referenceName:charRef.cName,
-								/* referenceAddress:refAdd,
-								referenceMun:refMun,
-								referenceProv:refProv, */
-								//referencePos:charRef.
-								referenceTel:charRef.cNum,
-								NamriaID:p.NID
-							};
-							query2(connection, 
-								sql, 
-								paramDef, 
-								values,
-								function(err, rs){
-									callback();
-							});
-							//console.log(charRef.cName+' '+charRef.cNum);
-						}
-						console.log('REF: Updated Successfully');	
+					}
+					else if (p.skills == null)
+					{
+						callback();
 					}
 					
-					
-				],
-
-				function (err) {
-					if(err)
-					{res.json(err);}
-					//console.log(err);
-					//res.json({success: true, failed:err});
-				})
+					console.log('SP_SKILL: Updated Successfully');	
+				}
 				
+
 			],
 			function (err) {
 				if(err)
 				{res.json(err);}
-				console.log(err);
+				console.log("xxxxxxxxxxx", err);
 				res.json({success: true});
 			});
 			
@@ -1270,7 +1126,7 @@ function setRoutes(){
 			async.series([
 				// basic profile 
 				function(callback){	
-					query(connection, "SELECT DISTINCT FIRST_M as firstName, MIDDLE_M as middleName, LAST_M as surName, Sex_C as sex, civil_stat as civilStatus, BIRTH_DATE AS dateOfBirth, BIRTH_PROV AS placeOfBirth,CITIZEN as citizenship,HEIGHT as height,[WEIGHT] as weight,BLOOD_T as bloodType, id_picture as picture, EMP_DTL.EMP_ID as NID,TIN,GSIS_ID_NO as GSIS,PAG_IBIG as PAGIBIG,PH_NO as PHILHEALTH,SSS_NO as SSS,EMAIL as eMail,CEL_NO as cellphone,ADDR_ST+ ', ' +ADDR_MUN+ ', ' +ADDR_PROV as resAdd, ADDR_ZP as resZip, TEL_NO as resTel, PADDR_ST+ ', ' +PADDR_MUN+ ', '+PADDR_PROV as perAdd, PADDR_ZP as perZip, PTEL_NO as perTel,F_FIRST as fatFirstname, F_MIDDLE as fatMiddlename, F_LAST as fatSurname,M_FIRST as motFirstname, M_MIDDLE as motMiddlename, M_LAST as motSurname,S_FIRST as spFirstname, S_MIDDLE as spMiddlename, S_LAST as spSurname,SPOUSE_OCC as spOccu, BUS_NAME as spEmployer, BUS_ADD as spBusAdd, BUS_TEL as spBusTel, CTC_NO as taxNo, CTC_PLACE as issuedAt, CTC_DATE as issuedDate, PDS_ACCOMP as dateAccomplished FROM EMP_DTL LEFT OUTER JOIN plant ON EMP_DTL.EMP_ID = plant.emp_id WHERE plant.AD_ACCOUNT = @param",{param:ad_account}, function(rs){
+					query(connection, "SELECT DISTINCT FIRST_M as firstName, MIDDLE_M as middleName, LAST_M as surName, name_extension as nameExtension, Sex_C as sex, civil_stat as civilStatus, BIRTH_DATE AS dateOfBirth, BIRTH_PROV AS placeOfBirth,CITIZEN as citizenship,HEIGHT as height,[WEIGHT] as weight,BLOOD_T as bloodType, id_picture as picture, EMP_DTL.EMP_ID as NID,TIN,GSIS_ID_NO as GSIS,PAG_IBIG as PAGIBIG,PH_NO as PHILHEALTH,SSS_NO as SSS,EMAIL as eMail,CEL_NO as cellphone,ADDR_ST+ ', ' +ADDR_MUN+ ', ' +ADDR_PROV as resAdd, ADDR_ZP as resZip, TEL_NO as resTel, PADDR_ST+ ', ' +PADDR_MUN+ ', '+PADDR_PROV as perAdd, PADDR_ZP as perZip, PTEL_NO as perTel,F_FIRST as fatFirstname, F_MIDDLE as fatMiddlename, F_LAST as fatSurname,M_FIRST as motFirstname, M_MIDDLE as motMiddlename, M_LAST as motSurname,S_FIRST as spFirstname, S_MIDDLE as spMiddlename, S_LAST as spSurname,SPOUSE_OCC as spOccu, BUS_NAME as spEmployer, BUS_ADD as spBusAdd, BUS_TEL as spBusTel, CTC_NO as taxNo, CTC_PLACE as issuedAt, CTC_DATE as issuedDate, PDS_ACCOMP as dateAccomplished FROM EMP_DTL LEFT OUTER JOIN plant ON EMP_DTL.EMP_ID = plant.emp_id WHERE plant.AD_ACCOUNT = @param",{param:ad_account}, function(rs){
 						employee = rs[0];
 						callback();
 					});
@@ -1284,7 +1140,7 @@ function setRoutes(){
 				},
 				//eligibility	
 				function(callback){			
-					query(connection, "SELECT DISTINCT EXAM_T as eligTitle, EXAM_PLACE as eligPlace, rating as eligRating FROM plant LEFT OUTER JOIN ELIG ON plant.emp_id = ELIG.EMP_ID WHERE plant.AD_ACCOUNT=@param",{param:ad_account}, function(rs){
+					query(connection, "SELECT DISTINCT EXAM_T as eligTitle, EXAM_MM +'/' + EXAM_DD + '/' + EXAM_YY as eligDate, EXAM_PLACE as eligPlace, rating as eligRating FROM plant LEFT OUTER JOIN ELIG ON plant.emp_id = ELIG.EMP_ID WHERE plant.AD_ACCOUNT=@param",{param:ad_account}, function(rs){
 						employee.eligibility = rs;
 						callback();
 					});
@@ -1305,7 +1161,7 @@ function setRoutes(){
 				},
 				//work experience
 				function(callback){
-					query(connection, "SELECT START_D as wrkExFrm, END_D as wrkExTo, POS_TITLE as wrkExPos, OFFICE_M as wrkExOff, SALARY_A as wrkExMonSal, PERSAL as wrkExPerSal, SERV.STAT_APPT as wrkExAppt FROM plant LEFT OUTER JOIN SERV ON plant.emp_id = SERV.EMP_ID WHERE plant.AD_ACCOUNT = @param",{param:ad_account}, function(rs){
+					query(connection, "SELECT START_D as wrkExFrm, END_D as wrkExTo, POS_TITLE as wrkExPos, OFFICE_M as wrkExOff, SALARY_A as wrkExMonSal, PERSAL as wrkExPerSal, SERV.STAT_APPT as wrkExAppt, SALARY_G as wrkExSalGrd, GOV_PRIV as wrkExGovServ FROM plant LEFT OUTER JOIN SERV ON plant.emp_id = SERV.EMP_ID WHERE plant.AD_ACCOUNT = @param",{param:ad_account}, function(rs){
 						employee.experience = rs;
 						callback();
 					});
@@ -1317,23 +1173,13 @@ function setRoutes(){
 						callback();
 					});
 				},
-				//recognition
+				//recognition 
 				function(callback){
 					
-					query(connection, "SELECT distinct as recog FROM plant LEFT OUTER JOIN non_acad ON plant.EMP_ID = non_acad.EMP_ID WHERE plant.AD_ACCOUNT = @param",{param:ad_account}, function(rs){
-						//employee.recognition = rs;
+					query(connection, "SELECT [distinct] as recog FROM plant LEFT OUTER JOIN non_acad ON plant.EMP_ID = non_acad.EMP_ID WHERE plant.AD_ACCOUNT = @param",{param:ad_account}, function(rs){
+						employee.recognition = rs;
 						callback();
 					});
-					
-					
-					/* query(connection, "SELECT 1",{param:ad_account}, function(rs){
-						//employee.recognition = rs;
-						console.log(rs);
-						callback();
-					}); */
-		
-		
-		
 				}, 
 				//organization
 				function(callback){
@@ -1360,7 +1206,6 @@ function setRoutes(){
 			function (err) {
 				if(err)
 					res.json(err);
-				//console.log(employee);
 				res.json(employee);
 			});
 		});
@@ -1371,7 +1216,9 @@ function setRoutes(){
 		ps.input('param', mssql.VarChar(50));
 		ps.prepare(sql, function(err){
 			ps.execute(param, function(err, rs) {
-				//console.log(err,rs);
+				ps.unprepare(function(err) {
+                        
+				});
 				callback(rs);
 			});
 		});
@@ -1386,6 +1233,10 @@ function setRoutes(){
 		
 		ps.prepare(sql, function(err){
 			ps.execute(paramVal, function(err, rs) {
+				
+				ps.unprepare(function(err) {
+                        
+				});
 				if(err)
 					console.log(err);
 				callback(err, rs);
@@ -1403,6 +1254,9 @@ function setRoutes(){
 			
 			ps.prepare(sql, function(err){
 				ps.execute(paramVal, function(err, rs) {
+					ps.unprepare(function(err) {
+                        
+					});
 					if(err)
 						console.log(err);
 					callback(err, rs);
