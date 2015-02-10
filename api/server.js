@@ -407,13 +407,13 @@ function setRoutes(){
 						paramDef, 
 						values,
 						function(err, rs){
-							callback();
+							callback(err);
 					});
 					console.log('CHILD: Deleted Successfully');
 				},
 				
 				//Delete EDUC
-				function(callback){	
+				/* function(callback){	
 					var paramDef= {
 						'NamriaID': mssql.VarChar(50)
 					};
@@ -430,7 +430,7 @@ function setRoutes(){
 							callback();
 					});
 					console.log('EDUC: Deleted Successfully');
-				},
+				}, */
 				
 				//Delete ELIG
 				function(callback){	
@@ -447,7 +447,7 @@ function setRoutes(){
 						paramDef, 
 						values,
 						function(err, rs){
-							callback();
+							callback(err);
 					});
 					console.log('ELIG: Deleted Successfully');
 				},
@@ -467,7 +467,7 @@ function setRoutes(){
 						paramDef, 
 						values,
 						function(err, rs){
-							callback();
+							callback(err);
 					});
 					console.log('SERV: Deleted Successfully');
 				},
@@ -487,7 +487,7 @@ function setRoutes(){
 						paramDef, 
 						values,
 						function(err, rs){
-							callback();
+							callback(err);
 					});
 					console.log('VOL_ORG: Deleted Successfully');
 				},
@@ -507,7 +507,7 @@ function setRoutes(){
 						paramDef, 
 						values,
 						function(err, rs){
-							callback();
+							callback(err);
 					});
 					console.log('TRAINEMP: Deleted Successfully');
 				},
@@ -527,7 +527,7 @@ function setRoutes(){
 						paramDef, 
 						values,
 						function(err, rs){
-							callback();
+							callback(err);
 					});
 					console.log('SP_SKILL: Deleted Successfully');
 				}, 
@@ -547,7 +547,7 @@ function setRoutes(){
 						paramDef, 
 						values,
 						function(err, rs){
-							callback();
+							callback(err);
 					});
 					console.log('NON_ACAD: Deleted Successfully');	
 				},
@@ -567,7 +567,7 @@ function setRoutes(){
 						paramDef, 
 						values,
 						function(err, rs){
-							callback();
+							callback(err);
 					});
 					console.log('MEM_ORG: Deleted Successfully');
 				},
@@ -587,7 +587,7 @@ function setRoutes(){
 						paramDef, 
 						values,
 						function(err, rs){
-							callback();
+							callback(err);
 					});
 					console.log('REF: Deleted Successfully');
 				},  
@@ -626,7 +626,7 @@ function setRoutes(){
 						paramDef, 
 						values,
 						function(err, rs){
-							callback();
+							callback(err);
 					});
 					console.log('PLANT: Updated Successfully');	
 					
@@ -732,14 +732,6 @@ function setRoutes(){
 					var dOB = new Date(p.dateOfBirth);
 					var taxdate = new Date(p.issuedDate);
 					var dateaccomplished = new Date(p.dateAccomplished);
-					var address = p.resAdd.split(',');
-					var p_address = p.perAdd.split(',');
-					var resSt = address[0];	
-					var resMun = address[1]; 
-					var resProv = address[2];
-					var provSt = p_address[0]; 
-					var provMun = p_address[1]; 
-					var provProv = p_address[2];
 					
 					var values = {
 						DoB:dOB,
@@ -757,14 +749,14 @@ function setRoutes(){
 						SSS:p.SSS, 
 						cellphone:p.cellphone, 
 						eMail:p.eMail, 
-						residentialSt:resSt,
-						residentialMun:resMun,
-						residentialProv:resProv,
+						residentialSt:p.resAdd,
+						residentialMun:p.resBrgy,
+						residentialProv:p.resCity,
 						residentialTel:p.resTel,
 						residentialZip:p.resZip, 
-						provincialSt:provSt,
-						provincialMun:provMun,
-						provincialProv:provProv,
+						provincialSt:p.perAdd,
+						provincialMun:p.perBrgy,
+						provincialProv:p.perCity,
 						provincialTel:p.perTel,
 						provincialZip:p.perZip,
 						spouse_f:p.spFirstname,
@@ -792,7 +784,7 @@ function setRoutes(){
 						paramDef, 
 						values,
 						function(err, rs){
-							callback();
+							callback(err);
 					});
 					console.log('EMP_DTL: Updated Successfully');	
 				},
@@ -823,7 +815,7 @@ function setRoutes(){
 							paramDef, 
 							values,
 							function(err, rs){
-								callback();
+								callback(err);
 						});
 						
 					}
@@ -831,7 +823,7 @@ function setRoutes(){
 				},
 				
 				//Update EDUC
-				function(callback){	
+				/* function(callback){	
 				
 					var paramDef = {
 						'LevelCode': mssql.VarChar(1),
@@ -847,7 +839,7 @@ function setRoutes(){
 						
 					};
 					
-					var sql = MultilineWrapper(function(){/*
+					var sql = MultilineWrapper(function(){ *//*
 					INSERT INTO EDUC 
 					(EMP_ID,
 					LEVEL_C,
@@ -870,9 +862,9 @@ function setRoutes(){
 					@EndYear,
 					@HonorsReceived,
 					@YearGraduated)
-					*/});
+					*//*});
 					
-					for(var item in p.education){
+					/* for(var item in p.education){
 						var e = p.education[item];
 						/* var levelCode = e.level;
 						var school = e.schoolName;
@@ -883,7 +875,7 @@ function setRoutes(){
 						var CareerDate = e.fromDate;
 						var CareerDate = e.toDate;
 						var CareerDate = e.scholarship; */
-						var values = {
+						/* var values = {
 							LevelCode: e.level, 
 							School: e.schoolName, 
 							DegreeCode: e.degree, 
@@ -905,10 +897,10 @@ function setRoutes(){
 					}
 				
 					console.log('EDUC: Updated Successfully');	
-				},
+				} */ 
 				
 				//Update ELIG
-				function(callback){	
+				/* function(callback){	
 					var paramDef = {
 						'careerTitle': mssql.NVarChar(35),
 						'careerRating': mssql.Decimal(18,2),
@@ -921,7 +913,7 @@ function setRoutes(){
 						'dateOfRelease': mssql.Date
 					};
 					
-					var sql = MultilineWrapper(function(){/*
+					var sql = MultilineWrapper(function(){ *//*
 					INSERT INTO ELIG 
 					(EMP_ID,
 					EXAM_T,
@@ -942,7 +934,7 @@ function setRoutes(){
 					@careerDateYY,
 					@licenseNumber,
 					@dateOfRelease)
-					*/});
+					*//* });
 					
 					for(var item in p.eligibility){
 						var e = p.eligibility[item];
@@ -986,7 +978,7 @@ function setRoutes(){
 						});
 					}
 					console.log('ELIG: Updated Successfully');	
-				},
+				}, */
 				
 				
 				
@@ -1027,7 +1019,8 @@ function setRoutes(){
 					@YESNO,
 					@Grade)
 					*/});
-					if (p.experience != null)
+					
+				if (p.experience != null)
 					{
 						for(var item in p.experience){
 							var e = p.experience[item];
@@ -1048,7 +1041,7 @@ function setRoutes(){
 								paramDef, 
 								values,
 								function(err, rs){
-									callback();
+									callback(err);
 							});
 						}
 					}
@@ -1089,7 +1082,7 @@ function setRoutes(){
 								paramDef, 
 								values,
 								function(err, rs){
-									callback();
+									callback(err);
 							});
 							
 						}
@@ -1126,7 +1119,7 @@ function setRoutes(){
 			async.series([
 				// basic profile 
 				function(callback){	
-					query(connection, "SELECT DISTINCT FIRST_M as firstName, MIDDLE_M as middleName, LAST_M as surName, name_extension as nameExtension, Sex_C as sex, civil_stat as civilStatus, BIRTH_DATE AS dateOfBirth, BIRTH_PROV AS placeOfBirth,CITIZEN as citizenship,HEIGHT as height,[WEIGHT] as weight,BLOOD_T as bloodType, id_picture as picture, EMP_DTL.EMP_ID as NID,TIN,GSIS_ID_NO as GSIS,PAG_IBIG as PAGIBIG,PH_NO as PHILHEALTH,SSS_NO as SSS,EMAIL as eMail,CEL_NO as cellphone,ADDR_ST+ ', ' +ADDR_MUN+ ', ' +ADDR_PROV as resAdd, ADDR_ZP as resZip, TEL_NO as resTel, PADDR_ST+ ', ' +PADDR_MUN+ ', '+PADDR_PROV as perAdd, PADDR_ZP as perZip, PTEL_NO as perTel,F_FIRST as fatFirstname, F_MIDDLE as fatMiddlename, F_LAST as fatSurname,M_FIRST as motFirstname, M_MIDDLE as motMiddlename, M_LAST as motSurname,S_FIRST as spFirstname, S_MIDDLE as spMiddlename, S_LAST as spSurname,SPOUSE_OCC as spOccu, BUS_NAME as spEmployer, BUS_ADD as spBusAdd, BUS_TEL as spBusTel, CTC_NO as taxNo, CTC_PLACE as issuedAt, CTC_DATE as issuedDate, PDS_ACCOMP as dateAccomplished FROM EMP_DTL LEFT OUTER JOIN plant ON EMP_DTL.EMP_ID = plant.emp_id WHERE plant.AD_ACCOUNT = @param",{param:ad_account}, function(rs){
+					query(connection, "SELECT DISTINCT FIRST_M as firstName, MIDDLE_M as middleName, LAST_M as surName, name_extension as nameExtension, Sex_C as sex, civil_stat as civilStatus, BIRTH_DATE AS dateOfBirth, BIRTH_PROV AS placeOfBirth,CITIZEN as citizenship,HEIGHT as height,[WEIGHT] as weight,BLOOD_T as bloodType, id_picture as picture, EMP_DTL.EMP_ID as NID,TIN,GSIS_ID_NO as GSIS,PAG_IBIG as PAGIBIG,PH_NO as PHILHEALTH,SSS_NO as SSS,EMAIL as eMail,CEL_NO as cellphone,ADDR_ST as resAdd ,ADDR_MUN as resBrgy,ADDR_PROV as resCity, ADDR_ZP as resZip, TEL_NO as resTel, PADDR_ST as perAdd,PADDR_MUN as perBrgy,PADDR_PROV as perCity, PADDR_ZP as perZip, PTEL_NO as perTel,F_FIRST as fatFirstname, F_MIDDLE as fatMiddlename, F_LAST as fatSurname,M_FIRST as motFirstname, M_MIDDLE as motMiddlename, M_LAST as motSurname,S_FIRST as spFirstname, S_MIDDLE as spMiddlename, S_LAST as spSurname,SPOUSE_OCC as spOccu, BUS_NAME as spEmployer, BUS_ADD as spBusAdd, BUS_TEL as spBusTel, CTC_NO as taxNo, CTC_PLACE as issuedAt, CTC_DATE as issuedDate, PDS_ACCOMP as dateAccomplished FROM EMP_DTL LEFT OUTER JOIN plant ON EMP_DTL.EMP_ID = plant.emp_id WHERE plant.AD_ACCOUNT = @param",{param:ad_account}, function(rs){
 						employee = rs[0];
 						callback();
 					});

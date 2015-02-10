@@ -144,9 +144,13 @@ Ext.define('Wizard', {
 		me.down('#txtEmail').setValue(p.eMail);
 		me.down('#txtCp').setValue(p.cellphone);
 		me.down('#txtResAdd').setValue(p.resAdd);
+		me.down('#txtResAdd2').setValue(p.resBrgy);
+		me.down('#txtResAdd3').setValue(p.resCity);
 		me.down('#txtResZip').setValue(p.resZip);
 		me.down('#txtResTel').setValue(p.resTel);
 		me.down('#txtPerAdd').setValue(p.perAdd);
+		me.down('#txtPerAdd2').setValue(p.perBrgy);
+		me.down('#txtPerAdd3').setValue(p.perCity);
 		me.down('#txtPerZip').setValue(p.perZip);
 		me.down('#txtPerTel').setValue(p.perTel);
 		me.down('#txtSpSurname').setValue(p.spSurname);
@@ -159,7 +163,7 @@ Ext.define('Wizard', {
 		
 		var grid = me.down('#gridChildren');
 		grid.getStore().removeAll();
-		// load children
+		// load Children
 		for(item in p.children){
 			var child = p.children[item];
 			grid.getStore().add({
@@ -175,7 +179,7 @@ Ext.define('Wizard', {
 		me.down('#txtMotFirstname').setValue(p.motFirstname);
 		me.down('#txtMotMiddlename').setValue(p.motMiddlename);
 		
-		// load education
+		// load Education
 		var grid1 = me.down('#gridEducation');
 		grid1.getStore().removeAll();
 		
@@ -195,7 +199,7 @@ Ext.define('Wizard', {
 			});
 		}
 		
-		// load eligibility
+		// load Eligibility
 		var grid2 = me.down('#gridCSE');
 		grid2.getStore().removeAll();
 		console.log(p.eligibility.eligDate);
@@ -213,7 +217,7 @@ Ext.define('Wizard', {
 			
 		}
 		
-		// load training
+		// load Training
 		var grid3 = me.down('#gridTraining');
 		grid3.getStore().removeAll();
 		
@@ -229,7 +233,7 @@ Ext.define('Wizard', {
 			
 		}
 		
-		//load work experience
+		//load Work Experience
 		var grid4 = me.down('#gridWE');
 		grid4.getStore().removeAll();
 		
@@ -250,22 +254,22 @@ Ext.define('Wizard', {
 			
 		}
 		
-		//load voluntary works
+		//load Voluntary Works
 		var gridVoluntary = me.down('#gridVW');
 		gridVoluntary.getStore().removeAll();
 		['VwName', 'VwFrom', 'VwTo', 'VwNumbers', 'VwPosition']
 		for(item in p.voluntary){
 			var v = p.voluntary[item];
 			grid6.getStore().add({
-				VwName: v.org_name,
-				VwFrom: v.fr_date,
-				VwTo: v.to_date,
-				VwNumbers: v.no_hrs,
-				VwPosition: v.position
+				VwName: v.volOrg,
+				VwFrom: v.volFrm,
+				VwTo: v.volTo,
+				VwNumbers: v.volHours,
+				VwPosition: v.volPos
 			});
 		}
 		
-		// load skills
+		// load Skills
 		var grid5 = me.down('#gridSkills');
 		grid5.getStore().removeAll();
 		
@@ -296,7 +300,7 @@ Ext.define('Wizard', {
 			SpecialSkills:s;
 		} */
 		
-		// load recognition
+		// load Non Academic Distinctions
 		var grid6 = me.down('#gridRecognition');
 		grid6.getStore().removeAll();
 		
@@ -309,7 +313,7 @@ Ext.define('Wizard', {
 		
 		var grid7 = me.down('#gridOrganization');
 		grid7.getStore().removeAll();
-		// load organization
+		// load Organization
 		for(item in p.organization){
 			var o = p.organization[item];
 			grid7.getStore().add({
@@ -339,7 +343,7 @@ Ext.define('Wizard', {
 		
 		var grid8 = me.down('#gridReference');
 		grid8.getStore().removeAll();
-		// load reference
+		// load Reference
 		for(item in p.charReference){
 			var c = p.charReference[item];
 			grid8.getStore().add({
@@ -382,9 +386,13 @@ Ext.define('Wizard', {
 			eMail: me.down('#txtEmail').getValue(),
 			cellphone: me.down('#txtCp').getValue(),
 			resAdd: me.down('#txtResAdd').getValue(),
+			resBrgy: me.down('#txtResAdd2').getValue(),
+			resCity: me.down('#txtResAdd3').getValue(),
 			resZip: me.down('#txtResZip').getValue(),
 			resTel: me.down('#txtResTel').getValue(),
 			perAdd: me.down('#txtPerAdd').getValue(),
+			perBrgy: me.down('#txtPerAdd2').getValue(),
+			perCity: me.down('#txtPerAdd3').getValue(),
 			perZip: me.down('#txtPerZip').getValue(),
 			perTel: me.down('#txtPerTel').getValue(),
 			spSurname: me.down('#txtSpSurname').getValue(),
@@ -407,6 +415,7 @@ Ext.define('Wizard', {
 			training: me.getTraining(),
 			skills: me.getSkills(),
 			recognition: me.getRecognition(),
+			voluntary: me.getVoluntary(),
 			organization: me.getOrganization(),
 			nationalRemarks: me.down('#txtThirdDegree').getValue(),
 			localRemarks: me.down('#txtFourthDegree').getValue(),
@@ -436,10 +445,9 @@ Ext.define('Wizard', {
 		};
 		return personnel;
 		
-		//console.log(JSON.stringify(personnel));
-		
 		
 	},
+	//get Children
 	getChildren: function(){
 		var me = this;
 		var children = [];
@@ -457,6 +465,7 @@ Ext.define('Wizard', {
 		return children;
 		
 	},
+	//get Education
 	getEducation: function(){
 		var me = this;
 		var education = [];
@@ -481,6 +490,7 @@ Ext.define('Wizard', {
 		return education;
 		
 	},
+	//get Eligibility
 	getEligibility: function(){
 		var me = this;
 		var eligibility = [];
@@ -501,6 +511,7 @@ Ext.define('Wizard', {
 		
 		return eligibility;
 	},
+	//get Training
 	getTraining: function(){
 		var me = this;
 		var training = [];
@@ -520,6 +531,7 @@ Ext.define('Wizard', {
 		return training;
 		
 	},
+	//get Work Experience
 	getWorkExperience: function(){
 		var me = this;
 		var experience = [];
@@ -541,6 +553,7 @@ Ext.define('Wizard', {
 		
 		return experience;
 	},
+	//get Skills
 	getSkills: function(){
 		var me = this;
 		var skills = [];
@@ -554,6 +567,7 @@ Ext.define('Wizard', {
 		
 		return skills;
 	},
+	//get Non Academic Distinctions
 	getRecognition: function(){
 		var me = this;
 		var recognition = [];
@@ -567,6 +581,26 @@ Ext.define('Wizard', {
 		
 		return recognition;
 	},
+	//get Voluntary Work
+	getVoluntary: function(){
+		var me = this;
+		var voluntary = [];
+		
+		var grid = me.down('#gridOrganization');
+		grid.getStore().data.each(function(row) {
+			voluntary.push({ 
+				volOrg: row.data['VwName'], 
+				volFrm: row.data['VwFrom'],
+				volTo: row.data['VwTo'],
+				volHours: row.data['VwNumbers'],
+				volPos: row.data['VwPosition']
+				
+			});
+		});
+		
+		return voluntary;
+	},
+	//get Organization
 	getOrganization: function(){
 		var me = this;
 		var organization = [];
@@ -580,6 +614,7 @@ Ext.define('Wizard', {
 		
 		return organization;
 	},
+	//get Character Reference
 	getCharRef: function(){
 		var me = this;
 		var charReference = [];
@@ -595,6 +630,7 @@ Ext.define('Wizard', {
 		
 		return charReference;
 	},
+	
 	//function for mapping
 	mapData:function(p){
 		var m = {};
@@ -642,10 +678,28 @@ Ext.define('Wizard', {
 		m.PISSS = p.SSS;
 		m.PIEA = p.eMail;
 		m.PICPN = p.cellphone;
-		m.PIRA = p.resAdd;
+		if (p.resAdd == null)
+		{
+			p.resAdd = '';
+			m.PIRA = p.resAdd+', '+p.resBrgy+', '+p.resCity;
+		}
+		else if(p.resBrgy == null)
+		{
+			p.resBrgy = '';
+			m.PIRA = p.resAdd+', '+p.resCity;
+		}
+		else if(p.resCity == null)
+		{
+			p.resCity = '';
+			m.PIRA = p.resAdd+', '+p.resBrgy
+		}
+		else
+		{
+			m.PIRA = p.resAdd+', '+p.resBrgy+', '+p.resCity;
+		}
 		m.PIZC = p.resZip;
 		m.PITELNO = p.resTel;
-		m.PIPADDRESS = p.perAdd;
+		m.PIPADDRESS = p.perAdd+', '+p.perBrgy+', '+p.perCity;;
 		m.PIZCODE = p.perZip;
 		m.PITELNO = p.perTel;
 		m.FBSPOUSESURNAME = p.spSurname;
@@ -1498,35 +1552,62 @@ Ext.define('Wizard', {
 						width: '100%'
 					},
 					items: [
-						// ADDRESS
-						{
-							xtype: 'textarea',
-							itemId:'txtResAdd',
-							fieldLabel: 'Address',
-							emptyText: 'house no., building, street, barangay, municipality, district, province',
-							width: '100%'
-						},
-						// ZIP CODE
-						{
-							xtype: 'numberfield',
-							itemId:'txtResZip',
-							fieldLabel: 'Zip code',
-							minValue:0,
-							// Remove spinner buttons, and arrow key and mouse wheel listeners
-							hideTrigger: true,
-							keyNavEnabled: false,
-							mouseWheelEnabled: false,
-							padding: '0 0 0 10'
-						},
-						// TELEPHONE
-						{
-							xtype: 'textfield',
-							itemId:'txtResTel',
-							fieldLabel: 'Telephone',
-							padding: '0 0 0 10'
-						}
-					
-					]
+					{
+						xtype: 'fieldcontainer',
+						layout: 'hbox',
+						items: [
+							// HOUSE NO.
+							{
+								xtype: 'textfield',
+								itemId:'txtResAdd',
+								fieldLabel: 'House no./ Building/Street',
+								padding: '0 0 0 10',
+								flex:1
+							},
+							// BARANGAY
+							{
+								xtype: 'textfield',
+								itemId:'txtResAdd2',
+								fieldLabel: 'Barangay/ Municipality',
+								padding: '0 0 0 10',
+								flex:1
+							},
+							// CITY
+							{
+								xtype: 'textfield',
+								itemId:'txtResAdd3',
+								fieldLabel: 'City/Province',
+								padding: '0 0 0 10',
+								flex:1
+							}
+						]
+					},
+					{
+						xtype: 'fieldcontainer',
+						layout: 'hbox',
+						items: [
+							// ZIP CODE
+							{
+								xtype: 'numberfield',
+								itemId:'txtResZip',
+								fieldLabel: 'Zip code',
+								minValue:0,
+								hideTrigger: true,
+								keyNavEnabled: false,
+								mouseWheelEnabled: false,
+								padding: '0 0 0 10',
+								flex: 1
+							},
+							// TELEPHONE
+							{
+								xtype: 'textfield',
+								itemId:'txtResTel',
+								fieldLabel: 'Telephone',
+								padding: '0 0 0 10',
+								flex: 1
+							}
+						]
+					}]
 				},
 				// PERMANENT
 				{
@@ -1541,32 +1622,64 @@ Ext.define('Wizard', {
 						width: '100%'
 					},
 					items: [
-						// ADDRESS
 						{
-							xtype: 'textarea',
-							itemId:'txtPerAdd',
-							fieldLabel: 'Address',
-							emptyText: 'house no., building, street, barangay, municipality, district, province',
-							width: '100%'
+							xtype: 'fieldcontainer',
+							layout: 'hbox',
+							items: [
+								// HOUSE NO.
+								{
+									xtype: 'textfield',
+									itemId:'txtPerAdd',
+									fieldLabel: 'House no./ Building/Street',
+									padding: '0 0 0 10',
+									flex:1
+								},
+								// BARANGAY
+								{
+									xtype: 'textfield',
+									itemId:'txtPerAdd2',
+									fieldLabel: 'Barangay/ Municipality',
+									padding: '0 0 0 10',
+									flex:1
+								},
+								// CITY
+								{
+									xtype: 'textfield',
+									itemId:'txtPerAdd3',
+									fieldLabel: 'City/Province',
+									padding: '0 0 0 10',
+									flex:1
+								}
+								
+							]
 						},
-						// ZIP CODE
 						{
-							xtype: 'numberfield',
-							itemId:'txtPerZip',
-							fieldLabel: 'Zip code',
-							minValue:0,
-							// Remove spinner buttons, and arrow key and mouse wheel listeners
-							hideTrigger: true,
-							keyNavEnabled: false,
-							mouseWheelEnabled: false,
-							padding: '0 0 0 10'
-						},
-						// TELEPHONE
-						{
-							xtype: 'textfield',
-							itemId:'txtPerTel',
-							fieldLabel: 'Telephone',
-							padding: '0 0 0 10'
+							
+							xtype: 'fieldcontainer',
+							layout: 'hbox',
+							items: [
+								// ZIP CODE
+								{
+									xtype: 'numberfield',
+									itemId:'txtPerZip',
+									fieldLabel: 'Zip code',
+									minValue:0,
+									hideTrigger: true,
+									keyNavEnabled: false,
+									mouseWheelEnabled: false,
+									padding: '0 0 0 10',
+									flex: 1
+								},
+								// TELEPHONE
+								{
+									xtype: 'textfield',
+									itemId:'txtPerTel',
+									fieldLabel: 'Telephone',
+									padding: '0 0 0 10',
+									flex: 1
+							
+								}
+							]
 						}
 					
 					]
