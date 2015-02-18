@@ -885,7 +885,8 @@ function setRoutes(){
 						'Status': mssql.VarChar(50),
 						'YESNO': mssql.VarChar(4),
 						'Grade': mssql.VarChar(50),
-						'NamriaID': mssql.VarChar(50)
+						'NamriaID': mssql.VarChar(50),
+						'PerSal': mssql.VarChar(50)
 					};
 					
 					var sql = MultilineWrapper(function(){/*
@@ -898,7 +899,8 @@ function setRoutes(){
 					SALARY_A,
 					STAT_APPT,
 					GOV_PRIV,
-					SALARY_G) 
+					SALARY_G,
+					PERSAL) 
 					VALUES 
 					(@NamriaID,
 					@StartDate,
@@ -908,7 +910,8 @@ function setRoutes(){
 					@Salary,
 					@Status,
 					@YESNO,
-					@Grade)
+					@Grade,
+					@PerSal)
 					*/});
 					
 					async.forEachSeries(p.experience, function(e, callback){
@@ -921,6 +924,7 @@ function setRoutes(){
 							Status: e.wrkExAppt,
 							YESNO: e.wrkExGovServ,
 							Grade: e.wrkExSalGrd,
+							PerSal: '2',
 							NamriaID:p.NID
 						};
 						query2(connection, 
@@ -1397,11 +1401,8 @@ function setRoutes(){
 				},
 				
 				//Update CHK_LIST
-				function(callback){
-					console.log(p.national);
-					callback();
-				}
-				/*function(callback){	
+				
+				function(callback){	
 					var paramDef = {
 						'National': mssql.Bit,
 						'NationalRemarks': mssql.VarChar(50),
@@ -1447,9 +1448,9 @@ function setRoutes(){
 					dif_a=@Abled,
 					dif_r=@AbledRemarks,
 					solo=@Solo,
-					solo_r=@SoloRemarks,
+					solo_r=@SoloRemarks
 					WHERE EMP_ID=@NamriaID
-					*//*});
+					*/});
 					
 					var values = {
 						National:p.national,
@@ -1483,7 +1484,7 @@ function setRoutes(){
 					});
 					
 					console.log('CHK_LIST: Updated Successfully');	
-				}*/
+				}
 				
 
 			],
