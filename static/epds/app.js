@@ -12,13 +12,9 @@ Ext.define('Wizard', {
 			handler: function(){
 				var me = this.up('wizard');
 				var personnel = me.getFormData();
-				Ext.Ajax.request({
-					url: '/testUpdate',
-					method: 'GET'
-				}); 
 				//Send the personnel data to server.js
 				Ext.Ajax.request({
-					url: '/testUpdate',
+					url: '/updateRecord',
 					method: 'POST',
 					jsonData: {
 						personnelInfo: personnel
@@ -47,7 +43,7 @@ Ext.define('Wizard', {
 				//console.log(dataForPDF);
 				//Send the personnel data to server.js for pdf printing
 				Ext.Ajax.request({
-					url: '/testpdf',
+					url: '/printPDF',
 					method: 'POST',
 					
 					jsonData: {
@@ -113,7 +109,16 @@ Ext.define('Wizard', {
 		me.down('#txtFirstname').setValue(p.firstName);
 		me.down('#txtMiddlename').setValue(p.middleName);
 		me.down('#txtNameExtension').setValue(p.nameExtension);
-		me.down('#dteDateofBirth').setValue(new Date(p.dateOfBirth));
+		var birthday;
+		if (p.dateOfBirth == null)
+		{
+			birthday = '';
+		}
+		else if (p.dateOfBirth != null)
+		{
+			birthday = new Date(p.dateOfBirth);
+		}
+		me.down('#dteDateofBirth').setValue(birthday);
 		//var outputDate = Ext.Date.format(new Date(p.dateOfBirth), 'm/d/Y');
 		//console.log(outputDate);
 		me.down('#txtPlaceofBirth').setValue(p.placeOfBirth);
@@ -166,6 +171,15 @@ Ext.define('Wizard', {
 		// load Children
 		for(item in p.children){
 			var child = p.children[item];
+			var childDate;
+			if (child.dateOfBirth == null)
+			{
+				childDate = '';
+			}
+			else if (child.dateOfBirth != null)
+			{
+				childDate = new Date(child.dateOfBirth);
+			}
 			grid.getStore().add({
 				name: child.fullName,
 				dob:  new Date(child.dateOfBirth)
@@ -202,9 +216,17 @@ Ext.define('Wizard', {
 		// load Eligibility
 		var grid2 = me.down('#gridCSE');
 		grid2.getStore().removeAll();
-		console.log(p.eligibility.eligDate);
 		for(item in p.eligibility){
 			var cse = p.eligibility[item];
+			var dateOfRelease;
+			if (cse.eligDateOfRelease == null)
+			{
+				dateOfRelease = '';
+			}
+			else if(cse.eligDateOfRelease != null)
+			{
+				dateOfRelease = new Date(cse.eligDateOfRelease);
+			}
 			
 			grid2.getStore().add({
 				CseCareer: cse.eligTitle,
@@ -212,7 +234,7 @@ Ext.define('Wizard', {
 				CseDate: cse.eligDate,
 				CsePlace: cse.eligPlace,
 				CseNumber: cse.eligLicenseNumber,
-				CseDor: cse.eligDateOfRelease
+				CseDor: new Date(cse.eligDateOfRelease)
 			});
 			
 		}
@@ -223,9 +245,27 @@ Ext.define('Wizard', {
 		
 		for(item in p.trainings){
 			var train = p.trainings[item];
+			var trainFrm;
+			var trainTo;
+			if (train.trainingFrom==null)
+			{
+				trainFrm = '';
+			}
+			else if (train.trainingFrom!=null)
+			{
+				trainFrm = new Date(train.trainingFrom);
+			}
+			if (train.trainingTo==null)
+			{
+				trainTo = '';
+			}
+			else if (train.trainingTo!=null)
+			{
+				trainTo = new Date(train.trainingTo);
+			}
 			grid3.getStore().add({
 				TitleofSeminar: train.titleOfSeminar,
-				TrainingFrom: new Date(train.trainingFrom),
+				TrainingFrom:  new Date(train.trainingFrom),
 				TrainingTo: new Date(train.trainingTo),
 				NumberofHours: train.numberOfHours,
 				ConductedBy: train.conductedBy
@@ -239,11 +279,27 @@ Ext.define('Wizard', {
 		
 		for(item in p.experience){
 			var exp = p.experience[item];
-			
-			
+			var wrkFrm;
+			var wrkTo;
+			if (exp.wrkExFrm==null)
+			{
+				wrkFrm = '';
+			}
+			else if (exp.wrkExFrm!=null)
+			{
+				wrkFrm = new Date(exp.wrkExFrm);
+			}
+			if (exp.wrkExTo==null)
+			{
+				wrkTo = '';
+			}
+			else if (exp.wrkExTo!=null)
+			{
+				wrkTo = new Date(exp.wrkExTo);
+			}
 			grid4.getStore().add({
-				workExFrom:  new Date(exp.wrkExFrm),
-				workExTo: new Date(exp.wrkExTo),
+				workExFrom: wrkFrm,
+				workExTo: wrkTo,
 				workExPosition:exp.wrkExPos,
 				workExDep: exp.wrkExOff,
 				workExMnth:exp.wrkExMonSal, //monthlySalary,
@@ -257,10 +313,9 @@ Ext.define('Wizard', {
 		//load Voluntary Works
 		var gridVoluntary = me.down('#gridVW');
 		gridVoluntary.getStore().removeAll();
-		['VwName', 'VwFrom', 'VwTo', 'VwNumbers', 'VwPosition']
 		for(item in p.voluntary){
 			var v = p.voluntary[item];
-			grid6.getStore().add({
+			gridVoluntary.getStore().add({
 				VwName: v.volOrg,
 				VwFrom: v.volFrm,
 				VwTo: v.volTo,
@@ -452,13 +507,21 @@ Ext.define('Wizard', {
 		var me = this;
 		var children = [];
 		
-		
 		var grid = me.down('#gridChildren');
+		var bday;
 		
 		grid.getStore().data.each(function(row) {
+			if (row.data['dob']==null)
+			{
+				bday = null;
+			}
+			else if(row.data['dob']!=null)
+			{
+				bday = row.data['dob'];
+			}
 			children.push({ 
 				fullName: row.data['name'], 
-				dateOfBirth: row.data['dob'] 
+				dateOfBirth: bday
 			});
 		});
 		
@@ -586,7 +649,7 @@ Ext.define('Wizard', {
 		var me = this;
 		var voluntary = [];
 		
-		var grid = me.down('#gridOrganization');
+		var grid = me.down('#gridVW');
 		grid.getStore().data.each(function(row) {
 			voluntary.push({ 
 				volOrg: row.data['VwName'], 
@@ -701,7 +764,7 @@ Ext.define('Wizard', {
 		m.PITELNO = p.resTel;
 		m.PIPADDRESS = p.perAdd+', '+p.perBrgy+', '+p.perCity;;
 		m.PIZCODE = p.perZip;
-		m.PITELNO = p.perTel;
+		m.PITELNO1 = p.perTel;
 		m.FBSPOUSESURNAME = p.spSurname;
 		m.FBFIRSTNAME = p.spFirstname;
 		m.FBMIDDLENAME = p.spMiddlename;
@@ -1037,14 +1100,14 @@ Ext.define('Wizard', {
 		Ext.define('WorkExp', {
 			extend: 'Ext.data.Model',
 			fields: [
-				 'workExFrom','workExTo','workExPosition','workExDep','workExSal','workExMnth', 'workExStat', 'workExGovt'
+				'workExFrom','workExTo','workExPosition','workExDep','workExSal','workExMnth', 'workExStat', 'workExGovt'
 			]
 		}); 
 		//Voluntary Work 
 		Ext.define('VwWork', {
 			extend: 'Ext.data.Model',
 			fields: [
-				 'VwName','VwFrom','VwTo', 'VwNumbers','VwPosition'		
+				'VwName','VwFrom','VwTo', 'VwNumbers','VwPosition'		
 			]
 		}); 
 		
@@ -1183,6 +1246,7 @@ Ext.define('Wizard', {
 									itemId:'dteDateofBirth',
 									format:'m/d/Y',
 									fieldLabel: 'Date of Birth',
+									maxValue: Ext.Date.format(new Date(), 'm/d/Y'),
 									flex: 1
 								},
 								// PLACE OF BIRTH
@@ -1771,9 +1835,10 @@ Ext.define('Wizard', {
 								xtype: 'datefield',
 								allowBlank: true,
 								format: 'm/d/Y',
-								maxValue: Ext.Date.format(new Date(), 'm/d/Y')
+								maxValue: new Date()
 							},
-							flex: 1 }
+							flex: 1 
+						}
 				    ],
 					buttons: [
 						{
@@ -2143,7 +2208,7 @@ Ext.define('Wizard', {
 										xtype: 'datefield',
 										allowBlank: true,
 										format: 'm/d/Y',
-										maxValue: Ext.Date.format(new Date(), 'm/d/Y')
+										maxValue: new Date()
 									},
 									fixed:true, 
 									menuDisabled:true, 
@@ -2232,7 +2297,7 @@ Ext.define('Wizard', {
 										xtype: 'datefield',
 										allowBlank: true,
 										format: 'm/d/Y',
-										maxValue: Ext.Date.format(new Date(), 'm/d/Y')
+										maxValue: new Date()
 									},
 									fixed:true, 
 									menuDisabled:true, 
@@ -2247,7 +2312,7 @@ Ext.define('Wizard', {
 										xtype: 'datefield',
 										allowBlank: true,
 										format: 'm/d/Y',
-										maxValue: Ext.Date.format(new Date(), 'm/d/Y')
+										maxValue: new Date()
 									},
 									fixed:true, 
 									menuDisabled:true, 
@@ -2563,7 +2628,7 @@ Ext.define('Wizard', {
 										xtype: 'datefield',
 										allowBlank: true,
 										format: 'm/d/Y',
-										maxValue: Ext.Date.format(new Date(), 'm/d/Y')
+										maxValue: new Date()
 									},
 									fixed:true, 
 									menuDisabled:true, 
@@ -2578,7 +2643,7 @@ Ext.define('Wizard', {
 										xtype: 'datefield',
 										allowBlank: true,
 										format: 'm/d/Y',
-										maxValue: Ext.Date.format(new Date(), 'm/d/Y')
+										maxValue: new Date()
 									},
 									fixed:true, 
 									menuDisabled:true, 
@@ -2587,7 +2652,15 @@ Ext.define('Wizard', {
 								}
 							]
 						},
-						{ header: '<center>NUMBER OF<br>HOURS</center>', fixed:true, menuDisabled:true, sortable:false, dataIndex: 'NumberofHours', editor: 'textfield', flex:.3 },
+						{ header: '<center>NUMBER OF<br>HOURS</center>', fixed:true, menuDisabled:true, sortable:false, 
+							dataIndex: 'NumberofHours', 
+							editor   : {xtype:'numberfield', 
+									minValue:0,
+									hideTrigger: true,
+									keyNavEnabled: false,
+									mouseWheelEnabled: false
+								},
+							flex:.3 },
 						{ header: '<center>CONDUCTED/SPONSORED BY<br>(Write in Full)</center>', fixed:true, menuDisabled:true, sortable:false, dataIndex: 'ConductedBy', editor: 'textfield', flex:1 }
 						
 					],

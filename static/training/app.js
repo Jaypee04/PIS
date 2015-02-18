@@ -1,10 +1,43 @@
 Ext.require(['Ext.data.*', 'Ext.grid.*']);
 
 
+Ext.define('TRAINING_INVITATION',{
+	extend: 'Ext.data.Model',
+	fields: [
+		{
+			name: 'id',
+			type: 'int'
+		},
+		'INVITECODE', 
+		'INSTCODE',
+		'INSTNAME',
+		'COURSECODE', 
+		'COURSENAME',
+		{
+			name: 'COURSESTART', 
+			type: 'date'
+		},
+		{
+			name: 'COURSEEND', 
+			type: 'date'
+		}, 
+		'VENUE',
+		{
+			name: 'LOCAL', 
+			type: 'boolean'
+		},
+	],
+	idProperty: 'INVITECODE',
+	proxy: {
+		type: 'rest',
+		url: '/training/training_invitation'
+	}
+
+});
+
 var trainingGrid = Ext.create('Ext.grid.Panel', {
 	itemId: 'trainingGrid',
 	title: 'List of trainings',
-	disableSelection: true,
 	tools: [
 		{ 
 			xtype: 'textfield', 
@@ -41,23 +74,25 @@ var trainingGrid = Ext.create('Ext.grid.Panel', {
 			flex: 1,
 			renderer: function(v){
 				return '<span style="color: blue; cursor: pointer;">' + (v?v:'') + '<span>';
-			}
+			},
+			tdCls:'wrap-text'
 		},	
 		{
 			text: 'Institution',
-			dataIndex: 'INSTCODE',
-			flex: 1
+			dataIndex: 'INSTNAME',
+			flex: 1,
+			tdCls:'wrap-text'
 		},
 		{
 			text: 'Start',
 			dataIndex: 'COURSESTART',
-			width: 110,
+			width: 120,
 			renderer: Ext.util.Format.dateRenderer('M d Y')
 		},
 		{
 			text: 'End',
 			dataIndex: 'COURSEEND',
-			width: 110,
+			width: 120,
 			renderer: Ext.util.Format.dateRenderer('M d Y')
 		},
 		{
@@ -67,39 +102,12 @@ var trainingGrid = Ext.create('Ext.grid.Panel', {
 		}
 	],
 	store: Ext.create('Ext.data.Store', {
-		fields: [
-			{
-				name: 'id',
-				type: 'int'
-			},
-			'INVITECODE', 
-			'INSTCODE', 
-			'COURSECODE', 
-			'COURSENAME',
-			{
-				name: 'COURSESTART', 
-				type: 'date'
-			},
-			{
-				name: 'COURSEEND', 
-				type: 'date'
-			}, 
-			'VENUE',
-			{
-				name: 'LOCAL', 
-				type: 'boolean'
-			},
-		],
+		model: 'TRAINING_INVITATION',
 		autoLoad: true,
 		autoSync: true,
 		sortOnLoad: true,
-		sorters: {property: 'COURSESTART', direction: 'DESC'},
-		proxy: {
-			type: 'rest',
-			url: '/training/training_invitation'
-		}
+		sorters: {property: 'COURSESTART', direction: 'DESC'}
 	}),
-	
 	listeners: {
 		cellclick: function(grid, td, cellIndex, rec){
 			if(cellIndex === 1){
@@ -112,6 +120,17 @@ var trainingGrid = Ext.create('Ext.grid.Panel', {
 		{
 			text: 'New training',
 			handler: function(){
+				var rec = Ext.create('TRAINING_INVITATION',{
+					INVITECODE: '[new]',
+					COURSECODE: null,
+					INSTCODE: null,
+					COURSESTART: null,
+					COURSEEND: null,
+					VENUE: null,
+					LOCAL: null
+				});
+				rec.phantom = true;
+				trainingForm.loadRecord(rec);
 				maintenancePanel.switch(trainingForm);
 			}
 		}
@@ -121,31 +140,47 @@ var trainingGrid = Ext.create('Ext.grid.Panel', {
 
 var trainingForm = Ext.create('Ext.form.Panel', {
 	itemId: 'trainingForm',
+	
 	title: 'Training Details',
-	bodyPadding: 5,
+	bodyPadding: 20,
+	trackResetOnLoad: true,
 	items:[
 		{
 			xtype: 'textfield',
 			fieldLabel: 'Invite code',
-			name: 'INVITECODE'
+			name: 'INVITECODE',
 		},
 		{
-			xtype: 'textfield', 
-			fieldLabel: 'Institution code',
-			name: 'INSTCODE'
-		},
-		{
-			xtype: 'textfield', 
-			fieldLabel: 'Course code',
-			name: 'COURSECODE'
+			xtype: 'combobox', 
+			fieldLabel: 'Institution',
+			queryMode: 'local',
+			enableRegEx: true,
+			forceSelection: true,
+			name: 'INSTCODE',
+			valueField: 'INSTCODE',
+			displayField: 'INSTNAME',
+			store: Ext.create('Ext.data.Store',{
+				autoLoad: true,
+				fields: ['INSTCODE', 'INSTNAME'],
+				proxy: {
+					type: 'rest',
+					url: '/table/institute_lib'
+				}
+			}),
+			listeners: {
+				change: function(combo, newVal, oldVal){
+					trainingForm.down('#INSTNAME').setValue(this.getRawValue());
+				}
+			}
+			
 		},
 		{
 			xtype: 'combobox', 
 			fieldLabel: 'Course',
 			queryMode: 'local',
 			enableRegEx: true,
-			name: 'COURSENAME',
-			hiddenName: 'COURSECODE',
+			forceSelection: true,
+			name: 'COURSECODE',
 			valueField: 'COURSECODE',
 			displayField: 'COURSENAME',
 			store: Ext.create('Ext.data.Store',{
@@ -155,17 +190,24 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 					type: 'rest',
 					url: '/table/course_lib'
 				}
-			})
+			}),
+			listeners: {
+				change: function(combo, newVal, oldVal){
+					trainingForm.down('#COURSENAME').setValue(this.getRawValue());
+				}
+			}
 		},
 		{
 			xtype: 'datefield', 
 			fieldLabel: 'Start',
-			name: 'COURSESTART'
+			name: 'COURSESTART',
+			format: 'M d Y'
 		},
 		{
 			xtype: 'datefield', 
 			fieldLabel: 'End',
-			name: 'COURSEEND'
+			name: 'COURSEEND',
+			format: 'M d Y'
 		},
 		{
 			xtype: 'textareafield', 
@@ -176,6 +218,16 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 			xtype: 'checkboxfield', 
 			fieldLabel: 'Local',
 			name: 'LOCAL'
+		}, 
+		{
+			xtype: 'hidden',
+			itemId: 'INSTNAME',
+			name: 'INSTNAME'
+		},
+				{
+			xtype: 'hidden',
+			itemId: 'COURSENAME',
+			name: 'COURSENAME'
 		}
 	],
 	buttons: [
@@ -183,15 +235,60 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 			text: 'Save',
 			handler: function(){
 				var rec = trainingForm.getRecord();
+
 				trainingForm.updateRecord(rec);
-				console.log(rec);
+				
+				if(rec.phantom)
+					trainingGrid.getStore().add(rec);
+				
+				trainingForm.reset();
+				maintenancePanel.switch(trainingGrid);
 			}
 		},
 		{
-			text: 'Cancel',
+			text: 'Delete',
 			handler: function(){
+				var rec = trainingForm.getRecord();
+				
+				trainingGrid.getStore().remove(rec);
 				trainingForm.reset();
 				maintenancePanel.switch(trainingGrid);
+				
+			}
+		},
+		{
+			text: 'Back',
+			handler: function(){
+				
+				var rec = trainingForm.getRecord();
+				if(trainingForm.isDirty()){
+					Ext.Msg.show({
+						title:'Save Changes?',
+						msg: 'You have unsaved changes. Would you like to save your changes?',
+						buttons: Ext.Msg.YESNOCANCEL,
+						icon: Ext.Msg.QUESTION,
+						fn: function(btn) {
+							if(btn === 'yes') {
+								var rec = trainingForm.getRecord();
+								trainingForm.updateRecord(rec);
+							} 
+							
+							if(btn === 'no'){
+								// do nothing
+							}
+							if(btn === 'cancel'){
+								return;
+							}
+							trainingForm.reset();
+							maintenancePanel.switch(trainingGrid);
+						}
+					});
+				} else {
+					trainingForm.reset(true);
+					maintenancePanel.switch(trainingGrid);
+				}
+				
+				
 			}
 		}
 	]
