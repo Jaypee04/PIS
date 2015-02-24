@@ -1,4 +1,4 @@
-var port = 1210;
+var port = 8001;
 var express = require('express');
 var app = express();
 
@@ -1523,7 +1523,7 @@ function setRoutes(){
 				},
 				// training
 				function(callback){
-					query(connection, "SELECT COURSE_M as titleOfSeminar, SPONSOR as conductedBy, DATE_START AS trainingFrom, DATE_END AS trainingTo, HOURS AS numberOfHours FROM plant LEFT OUTER JOIN TRAINEMP ON plant.emp_id = TRAINEMP.EMP_ID WHERE plant.AD_ACCOUNT = @param",{param:ad_account}, function(rs){										
+					query(connection, "SELECT COURSE_M as titleOfSeminar, SPONSOR as conductedBy, DATE_START AS trainingFrom, DATE_END AS trainingTo, HOURS AS numberOfHours FROM plant LEFT OUTER JOIN TRAINEMP ON plant.emp_id = TRAINEMP.EMP_ID WHERE plant.AD_ACCOUNT = @param ORDER BY TRAINEMP.DATE_START DESC",{param:ad_account}, function(rs){										
 						employee.trainings = rs;
 						callback();
 					});
@@ -1551,7 +1551,7 @@ function setRoutes(){
 				},
 				//work experience
 				function(callback){
-					query(connection, "SELECT START_D as wrkExFrm, END_D as wrkExTo, POS_TITLE as wrkExPos, OFFICE_M as wrkExOff, SALARY_A as wrkExMonSal, PERSAL as wrkExPerSal, SERV.STAT_APPT as wrkExAppt, SALARY_G as wrkExSalGrd, GOV_PRIV as wrkExGovServ FROM plant LEFT OUTER JOIN SERV ON plant.emp_id = SERV.EMP_ID WHERE plant.AD_ACCOUNT = @param",{param:ad_account}, function(rs){
+					query(connection, "SELECT START_D as wrkExFrm, END_D as wrkExTo, POS_TITLE as wrkExPos, OFFICE_M as wrkExOff, SALARY_A as wrkExMonSal, PERSAL as wrkExPerSal, SERV.STAT_APPT as wrkExAppt, SALARY_G as wrkExSalGrd, GOV_PRIV as wrkExGovServ FROM plant LEFT OUTER JOIN SERV ON plant.emp_id = SERV.EMP_ID WHERE plant.AD_ACCOUNT = @param ORDER BY SERV.START_D DESC",{param:ad_account}, function(rs){
 						employee.experience = rs;
 						callback();
 					});

@@ -2294,7 +2294,6 @@ Ext.define('Wizard', {
 										format: 'm/d/Y',
 										maxValue: new Date()
 									},
-									fixed:true, 
 									menuDisabled:true, 
 									sortable:false,
 									width:80
@@ -2309,7 +2308,6 @@ Ext.define('Wizard', {
 										format: 'm/d/Y',
 										maxValue: new Date()
 									},
-									fixed:true, 
 									menuDisabled:true, 
 									sortable:false,
 									width:80
@@ -2320,7 +2318,6 @@ Ext.define('Wizard', {
 							header: '<center>POSITION<br>TITLE <br>(Write in full) <\center>', 
 								dataIndex: 'workExPosition', 
 								editor: 'textfield', 
-								fixed:true, 
 								menuDisabled:true, 
 								sortable:false,
 								flex: .8 
@@ -2329,7 +2326,6 @@ Ext.define('Wizard', {
 							header: '<center>DEPARTMENT/AGENCY/<br>OFFICE/COMPANY <br>(Write in full)<\center>', 
 								dataIndex: 'workExDep', 
 								editor: 'textfield', 
-								fixed:true, 
 								menuDisabled:true, 
 								sortable:false,
 								flex: 1.5 
@@ -2344,7 +2340,6 @@ Ext.define('Wizard', {
 									keyNavEnabled: false,
 									mouseWheelEnabled: false
 								},
-								fixed:true, 
 								menuDisabled:true, 
 								sortable:false,
 								flex: .8 
@@ -2625,7 +2620,6 @@ Ext.define('Wizard', {
 										format: 'm/d/Y',
 										maxValue: new Date()
 									},
-									fixed:true, 
 									menuDisabled:true, 
 									sortable:false,
 									width:100
@@ -2640,7 +2634,6 @@ Ext.define('Wizard', {
 										format: 'm/d/Y',
 										maxValue: new Date()
 									},
-									fixed:true, 
 									menuDisabled:true, 
 									sortable:false,
 									width:100 
