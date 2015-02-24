@@ -1512,6 +1512,12 @@ function setRoutes(){
 				function(callback){	
 					query(connection, "SELECT DISTINCT FIRST_M as firstName, MIDDLE_M as middleName, LAST_M as surName, name_extension as nameExtension, Sex_C as sex, civil_stat as civilStatus, BIRTH_DATE AS dateOfBirth, BIRTH_PROV AS placeOfBirth,CITIZEN as citizenship,HEIGHT as height,[WEIGHT] as weight,BLOOD_T as bloodType, id_picture as picture, EMP_DTL.EMP_ID as NID,TIN,GSIS_ID_NO as GSIS,PAG_IBIG as PAGIBIG,PH_NO as PHILHEALTH,SSS_NO as SSS,EMAIL as eMail,CEL_NO as cellphone,ADDR_ST as resAdd ,ADDR_MUN as resBrgy,ADDR_PROV as resCity, ADDR_ZP as resZip, TEL_NO as resTel, PADDR_ST as perAdd,PADDR_MUN as perBrgy,PADDR_PROV as perCity, PADDR_ZP as perZip, PTEL_NO as perTel,F_FIRST as fatFirstname, F_MIDDLE as fatMiddlename, F_LAST as fatSurname,M_FIRST as motFirstname, M_MIDDLE as motMiddlename, M_LAST as motSurname,S_FIRST as spFirstname, S_MIDDLE as spMiddlename, S_LAST as spSurname,SPOUSE_OCC as spOccu, BUS_NAME as spEmployer, BUS_ADD as spBusAdd, BUS_TEL as spBusTel, CTC_NO as taxNo, CTC_PLACE as issuedAt, CTC_DATE as issuedDate, PDS_ACCOMP as dateAccomplished FROM EMP_DTL LEFT OUTER JOIN plant ON EMP_DTL.EMP_ID = plant.emp_id WHERE plant.AD_ACCOUNT = @param",{param:ad_account}, function(rs){
 						employee = rs[0];
+						if(employee==null)
+						{
+							callback(new Error('Record not found!'));
+							return;
+						}
+						
 						callback();
 					});
 				},

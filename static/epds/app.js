@@ -245,24 +245,7 @@ Ext.define('Wizard', {
 		
 		for(item in p.trainings){
 			var train = p.trainings[item];
-			var trainFrm;
-			var trainTo;
-			if (train.trainingFrom==null)
-			{
-				trainFrm = '';
-			}
-			else if (train.trainingFrom!=null)
-			{
-				trainFrm = new Date(train.trainingFrom);
-			}
-			if (train.trainingTo==null)
-			{
-				trainTo = '';
-			}
-			else if (train.trainingTo!=null)
-			{
-				trainTo = new Date(train.trainingTo);
-			}
+			
 			grid3.getStore().add({
 				TitleofSeminar: train.titleOfSeminar,
 				TrainingFrom:  new Date(train.trainingFrom),
@@ -757,13 +740,12 @@ Ext.define('Wizard', {
 		if (p.SSS != null)m.PISSS = p.SSS;
 		if (p.eMail != null)m.PIEA = p.eMail;			
 		if (p.cellphone != null)m.PICPN = p.cellphone;
-		if (p.resAdd != null)m.PIRA = p.resAdd;	
+		if (p.resAdd != null)m.PIRA = p.resAdd + ' ' + p.resBrgy + ' ' + p.resCity;	
 		if (p.resZip != null)m.PIZC = p.resZip;
 		if (p.resTel != null)m.PITELNO = p.resTel;
-		if (p.perAdd != null)m.PIPADDRESS = p.perAdd;
+		if (p.perAdd != null)m.PIPADDRESS = p.perAdd + ' ' + p.perBrgy + ' ' + p.perCity;
 		if (p.perZip != null)m.PIZCODE = p.perZip;
 		if (p.perTel != null)m.PITELNO1 = p.perTel;
-		//console.log(p.perTel);
 		if (p.spSurname != null)m.FBSPOUSESURNAME = p.spSurname;
 		if (p.spFirstname != null)m.FBFIRSTNAME = p.spFirstname;
 		if (p.spMiddlename != null)m.FBMIDDLENAME = p.spMiddlename;
@@ -2993,14 +2975,7 @@ Ext.define('Wizard', {
 							],
 							getValue: function(){
 								var me = this;
-								if (me.down('#radio1').getValue()==true)
-								{
-									return me.down('#radio1').getValue();
-								}
-								else if (me.down('#radio2').getValue()==true)
-								{
-									return me.down('#radio2').getValue();
-								}
+								return me.down('#radio1').getValue();
 							},
 							setValue: function(value){
 								var me = this;
