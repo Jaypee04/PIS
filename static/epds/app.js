@@ -50,7 +50,7 @@ Ext.define('Wizard', {
 						personnelPDF: dataForPDF
 					},
 					success: function(response){
-						window.open('http://localhost:1210/'+response.responseText, '_blank');
+						window.open('http://192.168.5.99:8001/'+response.responseText, '_blank');
 						
 					},
 					failure: function(response){
@@ -301,7 +301,7 @@ Ext.define('Wizard', {
 				workExTo: wrkTo,
 				workExPosition:exp.wrkExPos,
 				workExDep: exp.wrkExOff,
-				workExMnth: monthlySalary,
+				workExMnth: parseFloat(monthlySalary).toFixed(2),
 				workExSal: exp.wrkExSalGrd,
 				workExStat:exp.wrkExAppt,
 				workExGovt:exp.wrkExGovServ
@@ -1129,15 +1129,20 @@ Ext.define('Wizard', {
 			success: function(response){
 				var Employee = Ext.decode(response.responseText);
 				
-				if(Employee==null)
+				if(Employee.firstName==null)
 				{
 					Ext.Msg.alert('Not Found', 'No record found');
+				}
+				else if(Employee.firstName=='forbidden')
+				{
+					Ext.Msg.alert('Unauthorized access','You are not allowed to view this record');
 				}
 				else
 				{
 					me.loadFormData(Employee);
 					
 				}
+				
 			},
 			failure: function(response){
 				Ext.Msg.alert('Error', response.status);
