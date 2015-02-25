@@ -101,7 +101,7 @@ function setAuthentication(){
 		function(profile, done){
 			if(profile)
 			{
-				var name = profile.name.givenName + ' ' + profile.name.familyName;
+				var name = profile._json.sAMAccountName;
 				done(null, name);
 			}
 			else
@@ -1504,6 +1504,13 @@ function setRoutes(){
 		
 		var ad_account = req.params.name;
 		var employee;
+		
+		if(ad_account!=req.user)
+		{
+			//console.log(ad_account,req.user);
+			res.json({'firstName':'forbidden'});
+			return;
+		}
 		
 		var connection = new mssql.Connection(config, function(err) {
 			 
