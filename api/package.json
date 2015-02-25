@@ -13,6 +13,7 @@
     "express": "4.8.2",
     "express-myconnection": "^1.0.4",
     "express-session": "^1.8.1",
+	"fdf":"0.0.0",
     "mongodb": "~1.4.10",
     "mssql": "^1.3.0",
     "passport": "^0.2.1",
