@@ -68,6 +68,26 @@ Ext.define('INSTITUTE_LIB',{
 
 });
 
+Ext.define('COURSE_LIB',{
+	extend: 'Ext.data.Model',
+	fields: [
+		{
+			name: 'id',
+			type: 'int'
+		},
+		'COURSECODE',
+		'COURSENAME',
+		'COURSEDESC', 
+		'COURSEPREQ'
+	],
+	idProperty: 'COURSECODE',
+	proxy: {
+		type: 'rest',
+		url: '/training/course_lib'
+	}
+
+});
+
 var trainingGrid = Ext.create('Ext.grid.Panel', {
 	itemId: 'trainingGrid',
 	title: 'List of trainings',
@@ -79,7 +99,6 @@ var trainingGrid = Ext.create('Ext.grid.Panel', {
 			listeners: {
 				change: function(cmp, e){
 					var store = trainingGrid.getStore();
-					console.log(store);
 					store.clearFilter(true);
 					store.filter([{filterFn: function(rec){
 							return rec.get("COURSENAME").toLowerCase().indexOf(cmp.getValue().toLowerCase()) > -1;
@@ -198,7 +217,6 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 				
 			},
 			failure: function(response){
-				console.log(response.status);
 				Ext.Msg.alert('Error', response.status);
 				
 			}
@@ -330,7 +348,7 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 						var me = this.up('panel');
 						var main = me.up('panel');
 						var getCode = main.getInviteCode(); 
-						//console.log(getCode);
+						
 					}
 				},
 				{
@@ -342,7 +360,6 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 						
 						trainingForm.updateRecord(rec);
 						
-						console.log(rec.data);
 						
 						var trainingData = rec.data;
 						
@@ -356,7 +373,6 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 								Ext.Msg.alert('Success', 'Training has been added!');
 							},
 							failure: function(response){
-								console.log(response.statusText);
 								Ext.Msg.alert('Error', response.statusText);
 								
 							}
@@ -775,7 +791,6 @@ var trainingInstitutionGrid = Ext.create('Ext.grid.Panel', {
 			listeners: {
 				change: function(cmp, e){
 					var store = trainingInstitutionGrid.getStore();
-					console.log(store);
 					store.clearFilter(true);
 					store.filter([{filterFn: function(rec){
 							return rec.get("INSTNAME").toLowerCase().indexOf(cmp.getValue().toLowerCase()) > -1;
@@ -895,7 +910,6 @@ var trainingInstitutionGrid = Ext.create('Ext.grid.Panel', {
 				var me = this;
 				var panel = me.up('#trainingInstitutionGrid');
 				var institution = panel.getInstitution();
-				console.log(institution);
 				
 				Ext.Ajax.request({
 					url: '/updateInstitution',
@@ -907,7 +921,6 @@ var trainingInstitutionGrid = Ext.create('Ext.grid.Panel', {
 						Ext.Msg.alert('Success', 'Institution library has been updated!');
 					},
 					failure: function(response){
-						console.log(response.statusText);
 						Ext.Msg.alert('Error', response.statusText);
 						
 					}
@@ -945,65 +958,160 @@ var trainingInstitutionGrid = Ext.create('Ext.grid.Panel', {
 var trainingCourseGrid = Ext.create('Ext.grid.Panel', {
 	itemId: 'trainingCourseGrid',
 	title: 'Training Course',
-	disableSelection: true,
+	getTrainingCourse: function(){
+		var course = [];
+		
+		
+		var grid = this;
+		grid.getStore().data.each(function(row) {
+			course.push({ 
+				COURSECODE: row.data['COURSECODE'], 
+				COURSENAME: row.data['COURSENAME'],
+				COURSEDESC: row.data['COURSEDESC'],
+				COURSEPREQ: row.data['COURSEPREQ']
+			});
+		});
+		
+		return course;
+		
+	},
+	tools: [
+		
+		{ 
+			xtype: 'textfield', 
+			emptyText: 'Training Course',
+			enableKeyEvents: true,
+			listeners: {
+				change: function(cmp, e){
+					var store = trainingCourseGrid.getStore();
+					store.clearFilter(true);
+					store.filter([{filterFn: function(rec){
+							return rec.get("COURSENAME").toLowerCase().indexOf(cmp.getValue().toLowerCase()) > -1;
+						}
+					}]);
+				}
+			},
+			triggers: {
+				clear: {
+					cls: 'x-form-clear-trigger',
+					handler: function(){
+						this.setValue(null);
+					}
+				}
+			}
+		}
+		
+	],
 	columns: [
 		{ 
 			header: '<center>Course Code<\center>', 
-				autoScroll:true,
-				dataIndex: 'tcCoursecode', 
-				editor: 'textfield', 
-				fixed:true, 
-				menuDisabled:true, 
-				sortable:false,
-				flex: .5
-				//emptyText: "No Record to Display"
-			
+			autoScroll:true,
+			dataIndex: 'COURSECODE', 
+			editor: 'textfield', 
+			fixed:true, 
+			menuDisabled:true, 
+			sortable:false,
+			flex: .5
 		},				
 		{
 			header: '<center>Course Name<\center>',
-				dataIndex: 'tcCousename', 
-				editor: 'textfield', 
-				fixed:true, 
-				menuDisabled:true, 
-				sortable:false,	
-				flex: 1
+			dataIndex: 'COURSENAME', 
+			editor: 'textfield', 
+			fixed:true, 
+			menuDisabled:true, 
+			sortable:false,	
+			flex: 1
 		},
 		{
 			header: '<center>Description<\center>',
-				dataIndex: 'tcDescription', 
-				editor: 'textfield', 
-				fixed:true, 
-				menuDisabled:true, 
-				sortable:false,	
-				flex: 1.5
+			dataIndex: 'COURSEDESC', 
+			editor: 'textfield', 
+			fixed:true, 
+			menuDisabled:true, 
+			sortable:false,	
+			flex: 1.5
 		},						
 		{ 
 			header: '<center>Pre-requisite</center>',
-				dataIndex: 'tcPrerequisite',
-				flex:1,
-				fixed:true, 
-				menuDisabled:true, 
-				sortable:false, 
-				editor  : {						
-					xtype:'combo', 
-					store: new Ext.data.ArrayStore({
-					fields: ['Pre-requisite'],
-					data : 
-						[                                         
-						['Training1'],['Training2'], ['Training3']								   
-					]
-					}),
-						displayField:'level',
-						valueField: 'level',
-						mode: 'local',
-						typeAhead: false,
-						triggerAction: 'all',
-						lazyRender: true,
-						//emptyText: 'Training'
-				}
+			dataIndex: 'COURSEPREQ',
+			flex:1,
+			editor: 'textfield'
 		},
 	
-	],				
+	],	
+	store: Ext.create('Ext.data.Store', {
+		model: 'COURSE_LIB',
+		autoLoad: true,
+		autoSync: true,
+		sortOnLoad: true,
+		sorters: {property: 'COURSENAME', direction: 'DESC'}
+	}),	
+	buttons: [
+		{
+			text: 'New Course',
+			handler: function(){
+				var grid = this.up('grid');
+				var store = grid.getStore();
+				var rowEdit = grid.getPlugin('rowEditingPlugin');
+				var rec = Ext.create('COURSE_LIB',{
+					COURSECODE: '[new]',
+					COURSENAME: null,
+					COURSEDESC: null,
+					COURSEPREQ: null
+				});
+				store.add(rec);
+				rowEdit.startEdit(grid.getStore().getData().getCount()-1, 0);
+			}
+		},
+		{
+			xtype:'button',
+			text: 'Save',
+			handler: function(){
+				var me = this;
+				var panel = me.up('#trainingCourseGrid');
+				var course = panel.getTrainingCourse();
+				
+				Ext.Ajax.request({
+					url: '/updateTrainingCourse',
+					method: 'POST',
+					jsonData: {
+						courseList: course
+					},
+					success: function(response){
+						Ext.Msg.alert('Success', 'Course library has been updated!');
+					},
+					failure: function(response){
+						Ext.Msg.alert('Error', response.statusText);
+						
+					}
+				
+				}); 
+			}
+		},
+		{
+			text: 'Remove',
+			handler: function() 
+			{
+				var grid = this.up('grid');
+				var store = grid.getStore();
+				var rowEdit = grid.getPlugin('rowEditingPlugin');
+				var sm = grid.getSelectionModel();
+				rowEdit.cancelEdit();
+				store.remove(sm.getSelection());
+				if (store.getCount() > 0) {
+					sm.select(0);
+				}
+			},
+			disabled: false
+		}
+	],
+	plugins: [
+		Ext.create('Ext.grid.plugin.RowEditing', {
+			pluginId: 'rowEditingPlugin',
+			clicksToMoveEditor: 1,
+			autoCancel: false
+		})
+	]
 });
 
 
