@@ -214,6 +214,22 @@ function setRoutes(){
 		); 
 		
 	});
+	app.get('/training/course_lib', function(req, res){
+		var sql = MultilineWrapper(function(){/*
+			SELECT * FROM COURSE_LIB
+		*/});
+		query3(
+			sql,
+			{},{},
+			function(err, rs){
+				if(err)
+					res.json(err)
+				else 
+					res.json(rs);
+			}
+		); 
+		
+	});
 	
 	app.put('/training/training_invitation/:id', function(req, res){
 		
@@ -433,17 +449,16 @@ function setRoutes(){
 		
 	});
 	
+	//Updates Training Institution
 	app.post('/updateInstitution', function(req, res){
-				
 		var connection = new mssql.Connection(config, function(err) {
 			
 			var inst = req.body.institutionList;
-			console.log(inst);
 			async.series([
 				//Delete INSTITUTE_LIB
 				function(callback){	
 					var paramDef= {
-						'NamriaID': mssql.VarChar(50)
+						
 					};
 					var sql="DELETE FROM INSTITUTE_LIB";
 					
@@ -499,6 +514,88 @@ function setRoutes(){
 								else
 								{
 									console.log('INSTITUTE_LIB: Updated Successfully');	
+									callback(null);
+								}
+							}
+						);
+						
+					},
+					function(err)
+					{
+						callback();
+					}
+					);
+					
+				}
+			],
+			function (err) {
+				if(err)
+				{res.json(err);}
+				console.log("xxxxxxxxxxx", err);
+				res.json({success: true});
+			});
+		})
+	});
+	
+	//Updates Training Course
+	app.post('/updateTrainingCourse', function(req, res){
+		var connection = new mssql.Connection(config, function(err) {
+			
+			var course = req.body.courseList;
+			async.series([
+				//Delete COURSE_LIB
+				function(callback){	
+					var paramDef= {
+						
+					};
+					var sql="DELETE FROM COURSE_LIB";
+					
+					var values = {
+						
+					};
+					query2(	connection, 
+						sql, 
+						paramDef, 
+						values,
+						function(err, rs){
+							callback(err);
+					});
+					console.log('COURSE_LIB: Deleted Successfully');
+				},
+				
+				//Update COURSE_LIB
+				function(callback){	
+					
+					var paramDef = {
+						'COURSECODE': mssql.VarChar(50),
+						'COURSENAME': mssql.VarChar(50),
+						'COURSEDESC': mssql.VarChar(50),
+						'COURSEPREQ': mssql.VarChar(50)
+					};
+					
+					var sql = "INSERT INTO COURSE_LIB (COURSECODE,COURSENAME,COURSEDESC,COURSEPREQ) VALUES (@COURSECODE,@COURSENAME,@COURSEDESC,@COURSEPREQ)";
+					
+					async.forEachSeries(course, function(c,callback){
+							
+						var values = {
+							COURSECODE:c.COURSECODE, 
+							COURSENAME:c.COURSENAME,
+							COURSEDESC:c.COURSEDESC,
+							COURSEPREQ:c.COURSEPREQ
+						};
+						query2(connection, 
+							sql, 
+							paramDef, 
+							values,
+							function(err, rs){
+								if(err)
+								{
+									console.log('COURSE_LIB: Update Failed!');
+									callback(new Error(err));
+								}
+								else
+								{
+									console.log('COURSE_LIB: Updated Successfully');	
 									callback(null);
 								}
 							}
