@@ -40,6 +40,12 @@ var config_office = {
 	server: '192.168.8.16', 
 	database: 'PIS'
 };
+var config_local = {
+	user: 'pis',
+	password: 'pis',
+	server: 'localhost\\SQLExpress', 
+	database: 'PIS'
+};
 var config = {
 	user: 'pis',
 	password: 'pis',
@@ -173,9 +179,11 @@ function setRoutes(){
 	
 	app.get('/training/training_invitation', function(req, res){
 		var sql = MultilineWrapper(function(){/*
-			SELECT T1.*, T2.COURSENAME
+			SELECT T1.*, T2.COURSENAME, T3.INSTNAME
 			FROM TRAINING_INVITATION AS T1 LEFT OUTER JOIN
 			COURSE_LIB AS T2 ON T1.COURSECODE = T2.COURSECODE
+			LEFT OUTER JOIN INSTITUTE_LIB AS T3 ON
+			T1.INSTCODE = T3.INSTCODE
 		*/});
 		query3(
 			sql,
@@ -190,6 +198,22 @@ function setRoutes(){
 		
 	});
 	
+	app.get('/training/institute_lib', function(req, res){
+		var sql = MultilineWrapper(function(){/*
+			SELECT * FROM INSTITUTE_LIB
+		*/});
+		query3(
+			sql,
+			{},{},
+			function(err, rs){
+				if(err)
+					res.json(err)
+				else 
+					res.json(rs);
+			}
+		); 
+		
+	});
 	
 	app.put('/training/training_invitation/:id', function(req, res){
 		
@@ -243,7 +267,11 @@ function setRoutes(){
 			   ,[COURSESTART]
 			   ,[COURSEEND]
 			   ,[VENUE]
-			   ,[LOCAL])
+			   ,[LOCAL]
+			   ,[REQ_AGE]
+			   ,[REQ_GENDER]
+			   ,[REQ_YRGOV]
+			   ,[APPT_STAT])
 			VALUES
 			   (@INVITECODE, 
 			    @INSTCODE, 
@@ -251,7 +279,11 @@ function setRoutes(){
 				@COURSESTART, 
 				@COURSEEND, 
 				@VENUE, 
-				@LOCAL)
+				@LOCAL,
+				@REQ_AGE,
+				@REQ_GENDER,
+				@REQ_YRGOV,
+				@APPT_STAT)
 		*/});
 		
 		var paramDef = {
@@ -261,15 +293,17 @@ function setRoutes(){
 			'COURSESTART': mssql.Date,
 			'COURSEEND': mssql.Date,
 			'VENUE': mssql.VarChar(50),
-			'LOCAL': mssql.Bit
+			'LOCAL': mssql.Bit,
+			'REQ_AGE': mssql.Int,
+			'REQ_GENDER':mssql.VarChar(50),
+			'REQ_YRGOV':mssql.Int,
+			'APPT_STAT':mssql.Bit
 		};
 		
-		var paramVal = req.body;
-		if(paramVal['COURSESTART'])
-			paramVal['COURSESTART'] = paramVal['COURSESTART'] + '000';
-		if(paramVal['COURSEEND'])
-			paramVal['COURSEEND'] = paramVal['COURSEEND'] + '000';
+		var paramVal = req.body.trainingValues;
+		paramVal['COURSESTART'] = new Date(paramVal['COURSESTART']);
 		
+		paramVal['COURSEEND'] = new Date(paramVal['COURSEEND']);
 		query3(sql, paramDef, paramVal,
 			function(err, rs){
 			
@@ -294,7 +328,7 @@ function setRoutes(){
 	app.get('/connect', function(req, res){
 		var ps = new mssql.PreparedStatement(config);
 		ps.input('param', mssql.VarChar(50));
-		ps.prepare("Select 1;SELECT * FROM EDUC", function(err){
+		ps.prepare("SELECT * FROM EDUC", function(err){
 			ps.execute(param, function(err, rs) {
 				callback(rs);
 			});
@@ -359,6 +393,134 @@ function setRoutes(){
 		
 	});
 	
+	//returns institution
+	app.get('/getInstitution',function(req,res){
+		
+		var connection = new mssql.Connection(config, function(err) {
+			var request = new mssql.Request(connection);
+			request.query("SELECT INSTCODE, INSTNAME FROM INSTITUTE_LIB ORDER BY INSTNAME", function(err, recordset) {
+				var institution = recordset; 
+				res.json(institution);
+			});
+		});
+		
+	});
+	
+	//returns course library
+	app.get('/getCourseLibrary',function(req,res){
+		
+		var connection = new mssql.Connection(config, function(err) {
+			var request = new mssql.Request(connection);
+			request.query("SELECT COURSECODE, COURSENAME FROM COURSE_LIB ORDER BY COURSENAME", function(err, recordset) {
+				var courseLib = recordset; 
+				res.json(courseLib);
+			});
+		});
+		
+	});
+	
+	//returns invite code
+	app.get('/getInviteCode',function(req,res){
+		
+		var connection = new mssql.Connection(config, function(err) {
+			var request = new mssql.Request(connection);
+			var d = new Date();
+			request.query("Select max(substring(invitecode,6,3)) from Training_Invitation where substring(invitecode,1,4)='"+ d.getFullYear() +"'", function(err, recordset) {
+				var inviteCode = recordset; 
+				res.json(inviteCode);
+			});
+		});
+		
+	});
+	
+	app.post('/updateInstitution', function(req, res){
+				
+		var connection = new mssql.Connection(config, function(err) {
+			
+			var inst = req.body.institutionList;
+			console.log(inst);
+			async.series([
+				//Delete INSTITUTE_LIB
+				function(callback){	
+					var paramDef= {
+						'NamriaID': mssql.VarChar(50)
+					};
+					var sql="DELETE FROM INSTITUTE_LIB";
+					
+					var values = {
+						
+					};
+					query2(	connection, 
+						sql, 
+						paramDef, 
+						values,
+						function(err, rs){
+							callback(err);
+					});
+					console.log('INSTITUTE_LIB: Deleted Successfully');
+				},
+				
+				//Update INSTITUTE_LIB
+				function(callback){	
+					
+					var paramDef = {
+						'INSTCODE': mssql.VarChar(50),
+						'INSTNAME': mssql.VarChar(50),
+						'INSTADDRESS': mssql.VarChar(50),
+						'INSTCONTACT': mssql.VarChar(50),
+						'INSTPHONE': mssql.VarChar(50),
+						'INSTFAX': mssql.VarChar(50),
+						'INSTEMAIL': mssql.VarChar(50)
+					};
+					
+					var sql = "INSERT INTO INSTITUTE_LIB (INSTCODE,INSTNAME,INSTADDRESS,INSTCONTACT,INSTPHONE,INSTFAX,INSTEMAIL) VALUES (@INSTCODE,@INSTNAME,@INSTADDRESS,@INSTCONTACT,@INSTPHONE,@INSTFAX,@INSTEMAIL)";
+					
+					async.forEachSeries(inst, function(ins,callback){
+							
+						var values = {
+							INSTCODE:ins.INSTCODE, 
+							INSTNAME:ins.INSTNAME,
+							INSTADDRESS:ins.INSTADDRESS,
+							INSTCONTACT:ins.INSTCONTACT,
+							INSTPHONE:ins.INSTPHONE,
+							INSTFAX:ins.INSTFAX,
+							INSTEMAIL:ins.INSTEMAIL
+						};
+						query2(connection, 
+							sql, 
+							paramDef, 
+							values,
+							function(err, rs){
+								if(err)
+								{
+									console.log('INSTITUTE_LIB: Update Failed!');
+									callback(new Error(err));
+								}
+								else
+								{
+									console.log('INSTITUTE_LIB: Updated Successfully');	
+									callback(null);
+								}
+							}
+						);
+						
+					},
+					function(err)
+					{
+						callback();
+					}
+					);
+					
+				}
+			],
+			function (err) {
+				if(err)
+				{res.json(err);}
+				console.log("xxxxxxxxxxx", err);
+				res.json({success: true});
+			});
+		})
+	});
 	
 	app.post('/updateRecord', function(req, res){
 				
@@ -501,9 +663,9 @@ function setRoutes(){
 					WHERE emp_id=@NamriaID
 					*/});
 					
-					var dOB = new Date(p.dateOfBirth);
-					var taxdate = new Date(p.issuedDate);
-					var dateaccomplished = new Date(p.dateAccomplished);
+					var dOB = p.dateOfBirth==null?null:new Date(p.dateOfBirth);
+					var taxdate = p.issuedDate==null?null:new Date(p.issuedDate);
+					
 					
 					var values = {
 						DoB:dOB,
@@ -547,7 +709,7 @@ function setRoutes(){
 						tax_no:p.taxNo,
 						tax_place:p.issuedAt,
 						tax_date:taxdate,
-						date_accomplished:dateaccomplished, 
+						date_accomplished:new Date(), 
 						NamriaID:p.NID
 					};
 
@@ -594,7 +756,7 @@ function setRoutes(){
 					
 					async.forEachSeries(p.children, function(c,callback){
 						var name = c.fullName;
-						var dob = new Date(c.dateOfBirth);
+						var dob = c.dateOfBirth==null?null:new Date(c.dateOfBirth);
 							
 						var values = {
 							nameOfChild:name, 
@@ -691,15 +853,7 @@ function setRoutes(){
 					*/});
 					
 					async.forEachSeries(p.education, function(e, callback){
-						var levelCode = e.level;
-						var school = e.schoolName;
-						var degreeCode = e.degree;
-						var courseCode = e.course;
-						var CseDor = e.yearGraduated;
-						var CareerDate = e.highestGrade;
-						var CareerDate = e.fromDate;
-						var CareerDate = e.toDate;
-						var CareerDate = e.scholarship;
+						
 						var values = {
 							LevelCode: e.level, 
 							School: e.schoolName, 
@@ -801,7 +955,6 @@ function setRoutes(){
 						var CseRating = e.eligRating;
 						var CsePlace = e.eligPlace;
 						var CseNumber = e.eligLicenseNumber;
-						var CseDor = new Date(e.eligDateOfRelease);
 						var CareerDate = e.eligDate;
 						if (e.eligDate == null)
 						{
@@ -824,7 +977,7 @@ function setRoutes(){
 							careerDateMM: CseMonth,
 							careerDateDD: CseDay,
 							careerDateYY: CseYear,
-							dateOfRelease: CseDor,
+							dateOfRelease: e.eligDateOfRelease==null?null:new Date(e.eligDateOfRelease),
 							licenseNumber: CseNumber,
 							NamriaID:p.NID
 						};
@@ -916,8 +1069,8 @@ function setRoutes(){
 					
 					async.forEachSeries(p.experience, function(e, callback){
 						var values = {
-							StartDate: new Date(e.wrkExFrm), 
-							EndDate: new Date(e.wrkExTo), 
+							StartDate: e.wrkExFrm==null?null:new Date(e.wrkExFrm), 
+							EndDate: e.wrkExTo==null?null:new Date(e.wrkExTo), 
 							Position: e.wrkExPos, 
 							Office: e.wrkExOff,
 							Salary: e.wrkExMonSal,
@@ -1103,8 +1256,8 @@ function setRoutes(){
 						
 						var values = {
 							Title:t.titleOfSeminar,
-							DateStart: new Date(t.trainingFrom), 
-							DateEnd: new Date(t.trainingTo), 
+							DateStart: t.trainingFrom==null?null:new Date(t.trainingFrom), 
+							DateEnd: t.trainingTo==null?null:new Date(t.trainingTo), 
 							NumberOfHours: t.numberOfHours, 
 							SponsoredBy: t.conductedBy,
 							NamriaID:p.NID
