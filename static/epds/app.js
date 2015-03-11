@@ -50,7 +50,7 @@ Ext.define('Wizard', {
 						personnelPDF: dataForPDF
 					},
 					success: function(response){
-						window.open('http://192.168.5.99:8001/'+response.responseText, '_blank');
+						window.open('http://localhost:8001/'+response.responseText, '_blank');
 						
 					},
 					failure: function(response){
@@ -182,7 +182,7 @@ Ext.define('Wizard', {
 			}
 			grid.getStore().add({
 				name: child.fullName,
-				dob:  new Date(child.dateOfBirth)
+				dob: child.dateOfBirth==null?null:new Date(child.dateOfBirth)
 			});
 		}
 		
@@ -234,7 +234,7 @@ Ext.define('Wizard', {
 				CseDate: cse.eligDate,
 				CsePlace: cse.eligPlace,
 				CseNumber: cse.eligLicenseNumber,
-				CseDor: new Date(cse.eligDateOfRelease)
+				CseDor: cse.eligDateOfRelease==null?null:new Date(cse.eligDateOfRelease)
 			});
 			
 		}
@@ -248,8 +248,8 @@ Ext.define('Wizard', {
 			
 			grid3.getStore().add({
 				TitleofSeminar: train.titleOfSeminar,
-				TrainingFrom:  new Date(train.trainingFrom),
-				TrainingTo: new Date(train.trainingTo),
+				TrainingFrom:  train.trainingFrom==null?null:new Date(train.trainingFrom),
+				TrainingTo: train.trainingTo==null?null:new Date(train.trainingTo),
 				NumberofHours: train.numberOfHours,
 				ConductedBy: train.conductedBy
 			});
@@ -297,8 +297,8 @@ Ext.define('Wizard', {
 			}
 			
 			grid4.getStore().add({
-				workExFrom: wrkFrm,
-				workExTo: wrkTo,
+				workExFrom: exp.wrkExFrm==null?null:new Date(exp.wrkExFrm),
+				workExTo: exp.wrkExTo==null?null:new Date(exp.wrkExTo),
 				workExPosition:exp.wrkExPos,
 				workExDep: exp.wrkExOff,
 				workExMnth: parseFloat(monthlySalary).toFixed(2),
@@ -409,8 +409,8 @@ Ext.define('Wizard', {
 		}
 		me.down('#txtCertificate').setValue(p.taxNo);
 		me.down('#txtIssuedAt').setValue(p.issuedAt);
-		me.down('#dteIssuance').setValue(new Date(p.issuedDate));
-		me.down('#dteDateAccomplished').setValue(new Date(p.dateAccomplished));
+		me.down('#dteIssuance').setValue(p.issuedDate==null?null:new Date(p.issuedDate));
+		me.down('#dteDateAccomplished').setValue(p.dateAccomplished==null?null:new Date(p.dateAccomplished));
 		
 	}, 
 	getFormData: function(){
@@ -519,7 +519,7 @@ Ext.define('Wizard', {
 			}
 			children.push({ 
 				fullName: row.data['name'], 
-				dateOfBirth: bday
+				dateOfBirth: row.data['dob']
 			});
 		});
 		
@@ -699,7 +699,7 @@ Ext.define('Wizard', {
 		m.PIFN = p.firstName;
 		m.PIMN = p.middleName;
 		m.PIEX = p.nameExtension;
-		m.PIDOB = Ext.Date.format(new Date(p.dateOfBirth), 'm/d/Y');
+		m.PIDOB = Ext.Date.format(p.dateOfBirth==null?null:new Date(p.dateOfBirth), 'm/d/Y');
 		m.PIPOB = p.placeOfBirth;
 		m.PICITIZENSHIP = p.citizenship;
 		//CIVIL STATUS
@@ -728,8 +728,8 @@ Ext.define('Wizard', {
 			m.CSW = "On";		
 		}
 		//m.PIHEIGHT = p.height;
-		if (p.height != null)m.PIHEIGHT = p.height;
-		if (p.weight != null)m.PIWEIGHT = p.weight;	
+		if (p.height != null)m.PIHEIGHT = parseFloat(p.height).toFixed(2);
+		if (p.weight != null)m.PIWEIGHT = parseFloat(p.weight).toFixed(2);	
 		if (p.bloodType != null)m.PIBLOODTYPE = p.bloodType;	
 		if (p.NID != null)m.PIAEN = p.NID;
 		if (p.picture != null)m.PHOTO = p.picture;
@@ -763,8 +763,8 @@ Ext.define('Wizard', {
 		// CHILDREN		
 			//console.log (p.children);
 		for(var child in p.children){
-			m['FBNOC' + child] = p.children[child].fullName;
-			m['FBDOB' + child] = Ext.Date.format(new Date(p.children[child].dateOfBirth),'m/d/Y');
+			m['FBNOC' + child] = p.children[child].fullName==null?'':p.children[child].fullName;
+			m['FBDOB' + child] = Ext.Date.format(p.children[child].dateOfBirth==null?null:new Date(p.children[child].dateOfBirth),'m/d/Y');
 		}
 		
 		//EDUCATION
@@ -794,16 +794,16 @@ Ext.define('Wizard', {
 				m.NOS0 = p.education[educ].schoolName;
 				m.YEARGRADUATED0 = p.education[educ].yearGraduated;
 				m.HIGHESTGRADE0 = p.education[educ].highestGrade;
-				m.EBFROM0 = Ext.Date.format(new Date(p.education[educ].fromDate),'m/d/Y');
-				m.EBTO0 = Ext.Date.format(new Date(p.education[educ].toDate),'m/d/Y');
+				m.EBFROM0 = p.education[educ].fromDate;
+				m.EBTO0 = p.education[educ].toDate;
 				m.EBSCHOLARSHIP0 = p.education[educ].scholarship;
 			}
 			if (p.education[educ].level == '4'){
 				m.NOS1 = p.education[educ].schoolName;
 				m.YEARGRADUATED1 = p.education[educ].yearGraduated;
 				m.HIGHESTGRADE1 = p.education[educ].highestGrade;
-				m.EBFROM1 = Ext.Date.format(new Date(p.education[educ].fromDate),'m/d/Y');
-				m.EBTO1 = Ext.Date.format(new Date(p.education[educ].toDate),'m/d/Y');
+				m.EBFROM1 = p.education[educ].fromDate;
+				m.EBTO1 = p.education[educ].toDate;
 				m.EBSCHOLARSHIP1 = p.education[educ].scholarship;
 			}	 
 			if (p.education[educ].level == '3'){ 
@@ -812,8 +812,8 @@ Ext.define('Wizard', {
 				m.DEGREECOURSE2 = degreeDescription.degreeTitle + '/' + courseDescription.courseTitle ;
 				m.YEARGRADUATED2 = p.education[educ].yearGraduated;
 				m.HIGHESTGRADE2 = p.education[educ].highestGrade;
-				m.EBFROM2 = Ext.Date.format(new Date(p.education[educ].fromDate),'m/d/Y');
-				m.EBTO2 = Ext.Date.format(new Date(p.education[educ].toDate),'m/d/Y');
+				m.EBFROM2 = p.education[educ].fromDate;
+				m.EBTO2 = p.education[educ].toDate;
 				m.EBSCHOLARSHIP2 = p.education[educ].scholarship;
 			}
 			 if (p.education[educ].level == '2'){	
@@ -821,8 +821,8 @@ Ext.define('Wizard', {
 				m['COLDEGREECOURSE' + colcntr] = degreeDescription.degreeTitle + '/' + courseDescription.courseTitle ;
 				m['COLYEARGRADUATED' + colcntr] = p.education[educ].yearGraduated;
 				m['COLHIGHESTGRADE' + colcntr] = p.education[educ].highestGrade;
-				m['COLEBFROM' + colcntr] =Ext.Date.format(new Date(p.education[educ].fromDate),'m/d/Y');
-				m['COLEBTO' + colcntr] = Ext.Date.format(new Date(p.education[educ].toDate),'m/d/Y');
+				m['COLEBFROM' + colcntr] =p.education[educ].fromDate;
+				m['COLEBTO' + colcntr] = p.education[educ].toDate;
 				m['COLEBSCHOLARSHIP' +colcntr] = p.education[educ].scholarship;
 				colcntr=colcntr+1;
 			} 
@@ -833,8 +833,8 @@ Ext.define('Wizard', {
 				m['SGDEG' + pgcntr] = degreeDescription.degreeTitle + '/' + courseDescription.courseTitle ;
 				m['SGYEAR' + pgcntr] = p.education[educ].yearGraduated;
 				m['SGHIGH' + pgcntr] = p.education[educ].highestGrade;
-				m['SGFROM' + pgcntr] = Ext.Date.format(new Date(p.education[educ].fromDate),'m/d/Y');
-				m['SGTO' + pgcntr] = Ext.Date.format(new Date(p.education[educ].toDate),'m/d/Y');
+				m['SGFROM' + pgcntr] = p.education[educ].fromDate;
+				m['SGTO' + pgcntr] = p.education[educ].toDate;
 				m['SGSCHOLAR' + pgcntr] = p.education[educ].scholarship;	
 				pgcntr=pgcntr+1;				
 			} 
@@ -863,8 +863,8 @@ Ext.define('Wizard', {
 				m['SGDEG' + pgcntr] = degreeDescription.degreeTitle + '/' + courseDescription.courseTitle ;
 			}	
 			
-			m['WEFROM' + work] = Ext.Date.format(new Date(p.experience[work].wrkExFrm),'m/d/Y');
-			m['WETO' + work] = Ext.Date.format(new Date(p.experience[work].wrkExTo),'m/d/Y');
+			m['WEFROM' + work] = Ext.Date.format(p.experience[work].wrkExFrm==null?null:new Date(p.experience[work].wrkExFrm),'m/d/Y');
+			m['WETO' + work] = p.experience[work].wrkExTo==null?'present':Ext.Date.format(new Date(p.experience[work].wrkExTo),'m/d/Y');
 		    m['WEPOSITION' + work] = p.experience[work].wrkExPos==null?'':p.experience[work].wrkExPos;		
 			m['WEDAOC' + work] = p.experience[work].wrkExOff==null?'':p.experience[work].wrkExOff;
 			m['WEMS' + work] = p.experience[work].wrkExMonSal==null?'':p.experience[work].wrkExMonSal;
@@ -886,8 +886,8 @@ Ext.define('Wizard', {
 		//TRAINING
 		for(var trainings in p.training){
 			m['TPTOS' + trainings] = p.training[trainings].titleOfSeminar==null?'':p.training[trainings].titleOfSeminar;
-			m['TPFROM' + trainings] = Ext.Date.format(new Date(p.training[trainings].trainingFrom),'m/d/Y');
-			m['TPTO' + trainings] = Ext.Date.format(new Date(p.training[trainings].trainingTo),'m/d/Y');
+			m['TPFROM' + trainings] = Ext.Date.format(p.training[trainings].trainingFrom==null?null:new Date(p.training[trainings].trainingFrom),'m/d/Y');
+			m['TPTO' + trainings] = Ext.Date.format(p.training[trainings].trainingTo==null?null:new Date(p.training[trainings].trainingTo),'m/d/Y');
 			m['TPNOH' + trainings] = p.training[trainings].numberOfHours==null?'': p.training[trainings].numberOfHours;
 			m['TPCS' + trainings] = p.training[trainings].conductedBy==null?'':p.training[trainings].conductedBy;			
 		}
@@ -1024,8 +1024,8 @@ Ext.define('Wizard', {
 		//TAX
 		m.CTCN = p.taxNo;
 		m.OIIA = p.issuedAt;
-		m.OIIO = Ext.Date.format(new Date(p.issuedDate), 'm/d/Y');
-		m.DATEACCOMPLISHED = Ext.Date.format(new Date(p.dateAccomplished), 'm/d/Y');
+		m.OIIO = Ext.Date.format(p.issuedDate==null?null:new Date(p.issuedDate), 'm/d/Y');
+		m.DATEACCOMPLISHED = Ext.Date.format(p.dateAccomplished==null?null:new Date(p.dateAccomplished), 'm/d/Y');
 		
 		return JSON.stringify(m);
 	},
@@ -2623,7 +2623,7 @@ Ext.define('Wizard', {
 										xtype: 'datefield',
 										allowBlank: true,
 										format: 'm/d/Y',
-										maxValue: new Date()
+										maxValue: Ext.Date.format(new Date(), 'm/d/Y')
 									},
 									menuDisabled:true, 
 									sortable:false,
@@ -2637,7 +2637,7 @@ Ext.define('Wizard', {
 										xtype: 'datefield',
 										allowBlank: true,
 										format: 'm/d/Y',
-										maxValue: new Date()
+										maxValue: Ext.Date.format(new Date(), 'm/d/Y')
 									},
 									menuDisabled:true, 
 									sortable:false,
@@ -3561,7 +3561,9 @@ Ext.define('Wizard', {
 					
 				},
 				{
+					
 					xtype: 'panel',
+					hidden:true,
 					title: 'Date Accomplished',
 					layout: 'anchor',
 					collapsible: true,
