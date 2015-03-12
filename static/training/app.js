@@ -514,8 +514,22 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 					name:'APPT_STAT'
 				},
 				{
-					xtype: 'combo',
-					itemId:'cbocourseprerequisite',
+					xtype:'combo', 
+					itemId:'cboPreReq',
+					queryMode: 'local', 
+					store: Ext.create('Ext.data.Store',{
+					   autoLoad: true, 
+						fields: ['COURSENAME'], 
+						storeId:'storeCourseLib',
+						proxy: { 
+							type: 'ajax', 
+							url: '/training/course_lib' 
+						}
+						
+					}),
+					displayField:'COURSENAME',
+					valueField: 'COURSENAME',
+					emptyText: 'Select Pre-requisite',
 					fieldLabel:'Course Pre-requisite (if any):',
 					name:'COURSE_PREREQ',
 					width: 600,
@@ -881,7 +895,7 @@ var trainingInstitutionGrid = Ext.create('Ext.grid.Panel', {
 		autoLoad: true,
 		autoSync: true,
 		sortOnLoad: true,
-		sorters: {property: 'INSTNAME', direction: 'DESC'}
+		sorters: {property: 'INSTNAME', direction: 'ASC'}
 	}),	
 	buttons: [
 		{
@@ -963,7 +977,9 @@ var trainingCourseGrid = Ext.create('Ext.grid.Panel', {
 		
 		
 		var grid = this;
-		grid.getStore().data.each(function(row) {
+		var store = grid.getStore();
+		store.clearFilter(true);
+		store.data.each(function(row) {
 			course.push({ 
 				COURSECODE: row.data['COURSECODE'], 
 				COURSENAME: row.data['COURSENAME'],
@@ -984,11 +1000,12 @@ var trainingCourseGrid = Ext.create('Ext.grid.Panel', {
 			listeners: {
 				change: function(cmp, e){
 					var store = trainingCourseGrid.getStore();
-					store.clearFilter(true);
+					//store.clearFilter(true);
 					store.filter([{filterFn: function(rec){
 							return rec.get("COURSENAME").toLowerCase().indexOf(cmp.getValue().toLowerCase()) > -1;
 						}
-					}]);
+					}
+					]);
 				}
 			},
 			triggers: {
@@ -1002,6 +1019,7 @@ var trainingCourseGrid = Ext.create('Ext.grid.Panel', {
 		}
 		
 	],
+	collapsible:true,
 	columns: [
 		{ 
 			header: '<center>Course Code<\center>', 
@@ -1035,8 +1053,25 @@ var trainingCourseGrid = Ext.create('Ext.grid.Panel', {
 			header: '<center>Pre-requisite</center>',
 			dataIndex: 'COURSEPREQ',
 			flex:1,
-			editor: 'textfield'
-		},
+			editor   : {
+				xtype:'combo', 
+				itemId:'cboPreReq',
+				queryMode: 'local', 
+				store: Ext.create('Ext.data.Store',{
+				   autoLoad: true, 
+					fields: ['COURSENAME'], 
+					storeId:'storeCourseLib',
+					proxy: { 
+						type: 'ajax', 
+						url: '/training/course_lib' 
+					}
+					
+				}),
+				displayField:'COURSENAME',
+				valueField: 'COURSENAME',
+				emptyText: 'Select Pre-requisite'
+			}
+		}
 	
 	],	
 	store: Ext.create('Ext.data.Store', {
@@ -1044,7 +1079,14 @@ var trainingCourseGrid = Ext.create('Ext.grid.Panel', {
 		autoLoad: true,
 		autoSync: true,
 		sortOnLoad: true,
-		sorters: {property: 'COURSENAME', direction: 'DESC'}
+		sorters: {property: 'COURSECODE', direction: 'ASC'},
+		filters: [
+			function(record){
+				return record.get('COURSECODE')!='0000000';
+				console.log(record);
+			}
+		]
+		
 	}),	
 	buttons: [
 		{
