@@ -427,7 +427,7 @@ function setRoutes(){
 		
 		var connection = new mssql.Connection(config, function(err) {
 			var request = new mssql.Request(connection);
-			request.query("SELECT COURSECODE, COURSENAME FROM COURSE_LIB ORDER BY COURSENAME", function(err, recordset) {
+			request.query("SELECT COURSECODE, COURSENAME, COURSEDESC, COURSEPREQ FROM COURSE_LIB WHERE COURSECODE != '0000000'", function(err, recordset) {
 				var courseLib = recordset; 
 				res.json(courseLib);
 			});
