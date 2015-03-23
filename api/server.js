@@ -176,7 +176,7 @@ function setRoutes(){
 		); 
 		
 	});
-	
+	//list of trainings
 	app.get('/training/training_invitation', function(req, res){
 		var sql = MultilineWrapper(function(){/*
 			SELECT T1.*, T2.COURSENAME, T3.INSTNAME
@@ -197,7 +197,84 @@ function setRoutes(){
 		); 
 		
 	});
-	
+	//
+	app.get('/training/nominees', function(req, res){
+		//console.log('nominees');
+		
+	});
+	//
+	app.get('/training/report_training', function(req, res){
+		var sql = MultilineWrapper(function(){/*
+			select course_lib.coursename,instName,venue,COURSESTART,COURSEEND from nominees 
+			left outer join training_invitation on training_invitation.invitecode = nominees.invitecode 
+			left outer join institute_lib on institute_lib.instcode = training_invitation.instcode 
+			left outer join course_lib on course_lib.coursecode = training_invitation.coursecode 
+			where approve = '1'
+			and instName <>''
+		*/});
+		query3(
+			sql,
+			{},{},
+			function(err, rs){
+				if(err)
+					res.json(err)
+				else 
+					res.json(rs);
+			}
+		); 
+		
+	});
+	app.get('/training/report_ogt', function(req, res){
+		var sql = MultilineWrapper(function(){/*
+			select course_lib.coursename,instName,venue,COURSESTART,COURSEEND from nominees 
+			left outer join training_invitation on training_invitation.invitecode = nominees.invitecode 
+			left outer join institute_lib on institute_lib.instcode = training_invitation.instcode 
+			left outer join course_lib on course_lib.coursecode = training_invitation.coursecode 
+			where approve = '1' and GETDATE() between COURSESTART and COURSEEND
+		*/});
+		query3(
+			sql,
+			{},{},
+			function(err, rs){
+				if(err)
+					res.json(err)
+				else 
+					res.json(rs);
+			}
+		); 
+		
+	});
+	app.get('/training/report_traininginst', function(req, res){
+		var sql = MultilineWrapper(function(){/*
+			 select COUNT(approve) as noAttendees,course_lib.courseName,instName,venue,courseStart,courseEnd from nominees 
+				left outer join training_invitation on training_invitation.invitecode = nominees.invitecode 
+				left outer join institute_lib on institute_lib.instcode = training_invitation.instcode 
+				left outer join course_lib on course_lib.coursecode = training_invitation.coursecode 
+				where approve = '1' 
+				group by courseStart,courseEnd,course_lib.courseName,instName,venue
+		*/});
+		query3(
+			sql,
+			{},{},
+			function(err, rs){
+				if(err)
+					res.json(err)
+				else 
+					res.json(rs);
+			}
+		); 
+		
+	});
+	app.get('/getinst',function(req,res){		
+		var connection = new mssql.Connection(config, function(err) {
+			var request = new mssql.Request(connection);
+			request.query("select instcode as instCode, instname as instName from institute_lib order by instname", function(err, recordset) {
+				var inst = recordset; 
+				res.json(inst);
+			});
+		});
+		
+	});
 	app.get('/training/institute_lib', function(req, res){
 		var sql = MultilineWrapper(function(){/*
 			SELECT * FROM INSTITUTE_LIB
@@ -231,18 +308,25 @@ function setRoutes(){
 		
 	});
 	
-	app.put('/training/training_invitation/:id', function(req, res){
+	app.put('/training/training_invitation/:INVITECODE', function(req, res){
 		
 		var sql = MultilineWrapper(function(){/*
 			UPDATE [TRAINING_INVITATION]
-			SET [INVITECODE] = COALESCE(@INVITECODE, INVITECODE)
-			  ,[INSTCODE] = COALESCE(@INSTCODE, INSTCODE)
-			  ,[COURSECODE] = COALESCE(@COURSECODE, COURSECODE)
-			  ,[COURSESTART] = COALESCE(@COURSESTART, COURSESTART)
-			  ,[COURSEEND] = COALESCE(@COURSEEND, COURSEEND)
-			  ,[VENUE] = COALESCE(@VENUE, VENUE)
-			  ,[LOCAL] = COALESCE(@LOCAL, LOCAL)
-			WHERE id = @id
+			SET [INSTCODE] = @INSTCODE
+				,[COURSECODE] = @COURSECODE
+			    ,[COURSESTART] = @COURSESTART
+			    ,[COURSEEND] = @COURSEEND
+			    ,[VENUE] = @VENUE
+			    ,[LOCAL] = @LOCAL
+			    ,[REQ_AGE] = @REQ_AGE
+			    ,[REQ_GENDER] = @REQ_GENDER
+			    ,[CIVIL_STATUS] = @CIVIL_STATUS
+			    ,[REQ_YRGOV] = @REQ_YRGOV
+			    ,[APPT_STAT] = @APPT_STAT
+			    ,[COURSE_PREREQ] = @COURSE_PREREQ
+			    ,[EDUC_DEGREE] = @EDUC_DEGREE
+			    ,[EDUC_COURSE] = @EDUC_COURSE
+			WHERE [INVITECODE] = @INVITECODE
 		*/});
 		
 		var paramDef = {
@@ -253,20 +337,26 @@ function setRoutes(){
 			'COURSEEND': mssql.Date,
 			'VENUE': mssql.VarChar(50),
 			'LOCAL': mssql.Bit,
-			'id': mssql.Int
+			'REQ_AGE': mssql.Int,
+			'REQ_GENDER':mssql.VarChar(50),
+			'REQ_YRGOV':mssql.Int,
+			'APPT_STAT':mssql.Bit,
+			'COURSE_PREREQ': mssql.VarChar(50),
+			'EDUC_DEGREE': mssql.VarChar(50),
+			'EDUC_COURSE': mssql.VarChar(50),
+			'CIVIL_STATUS':mssql.VarChar(50)
 		};
 		
-		var paramVal = req.body;
-		if(paramVal['COURSESTART'])
-			paramVal['COURSESTART'] = paramVal['COURSESTART'] + '000';
-		if(paramVal['COURSEEND'])
-			paramVal['COURSEEND'] = paramVal['COURSEEND'] + '000';
+		var paramVal = req.body.trainingValues;
+		paramVal['COURSESTART'] = new Date(paramVal['COURSESTART']);
+		paramVal['COURSEEND'] = new Date(paramVal['COURSEEND']);
+		//console.log(paramVal['COURSESTART']+' ' + paramVal['COURSEEND']);
 		
 		query3(sql, paramDef, paramVal,
 			function(err, rs){
-				if(err)
+				/* if(err)
 					res.json({success: false, message: err});
-				else 
+				else  */
 					res.json({success: true, message: 'Updated'});
 			}
 		); 
@@ -286,8 +376,12 @@ function setRoutes(){
 			   ,[LOCAL]
 			   ,[REQ_AGE]
 			   ,[REQ_GENDER]
+			   ,[CIVIL_STATUS]
 			   ,[REQ_YRGOV]
-			   ,[APPT_STAT])
+			   ,[APPT_STAT]
+			   ,[COURSE_PREREQ]
+			   ,[EDUC_DEGREE]
+			   ,[EDUC_COURSE])
 			VALUES
 			   (@INVITECODE, 
 			    @INSTCODE, 
@@ -298,8 +392,12 @@ function setRoutes(){
 				@LOCAL,
 				@REQ_AGE,
 				@REQ_GENDER,
+				@CIVIL_STATUS,
 				@REQ_YRGOV,
-				@APPT_STAT)
+				@APPT_STAT,
+				@COURSE_PREREQ,
+				@EDUC_DEGREE,
+				@EDUC_COURSE)
 		*/});
 		
 		var paramDef = {
@@ -313,19 +411,22 @@ function setRoutes(){
 			'REQ_AGE': mssql.Int,
 			'REQ_GENDER':mssql.VarChar(50),
 			'REQ_YRGOV':mssql.Int,
-			'APPT_STAT':mssql.Bit
+			'APPT_STAT':mssql.Bit,
+			'COURSE_PREREQ': mssql.VarChar(50),
+			'EDUC_DEGREE': mssql.VarChar(50),
+			'EDUC_COURSE': mssql.VarChar(50),
+			'CIVIL_STATUS':mssql.VarChar(50)
 		};
 		
 		var paramVal = req.body.trainingValues;
 		paramVal['COURSESTART'] = new Date(paramVal['COURSESTART']);
-		
 		paramVal['COURSEEND'] = new Date(paramVal['COURSEEND']);
 		query3(sql, paramDef, paramVal,
 			function(err, rs){
 			
-				if(err)
+				/* if(err)
 					res.json({success: false, message: err});
-				else 
+				else  */
 					res.json({success: true, message: rs});
 					
 
@@ -441,8 +542,8 @@ function setRoutes(){
 		var connection = new mssql.Connection(config, function(err) {
 			var request = new mssql.Request(connection);
 			var d = new Date();
-			request.query("Select max(substring(invitecode,6,3)) from Training_Invitation where substring(invitecode,1,4)='"+ d.getFullYear() +"'", function(err, recordset) {
-				var inviteCode = recordset; 
+			request.query("Select max(substring(invitecode,6,5)) as lastDig from Training_Invitation where substring(invitecode,1,4)='"+ d.getFullYear() +"'", function(err, recordset) {
+				var inviteCode = recordset[0]; 
 				res.json(inviteCode);
 			});
 		});
