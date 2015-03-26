@@ -390,6 +390,7 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 					xtype: 'combobox', 
 					fieldLabel: 'Institution',
 					labelWidth: 120,
+					width: 600,
 					queryMode: 'local',
 					enableRegEx: true,
 					forceSelection: true,
@@ -415,6 +416,7 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 					xtype: 'combobox', 
 					fieldLabel: 'Course',
 					labelWidth: 120,
+					width: 600,
 					queryMode: 'local',
 					enableRegEx: true,
 					forceSelection: true,
@@ -666,16 +668,19 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 							name      :'REQ_GENDER',
 							inputValue: '1',
 							id        : 'radio1',
+							width     : 80
 						}, {
 							boxLabel  : 'Male',
 							name      :'REQ_GENDER',
 							inputValue: '2',
-							id        : 'radio2',						
+							id        : 'radio2',
+							width     : 80							
 						}, {
 							boxLabel  : 'Both',
 							name      :'REQ_GENDER',
 							inputValue: '0',
-							id        : 'radio3'
+							id        : 'radio3',
+							width     : 80
 						}
 					]
 				},
@@ -692,17 +697,19 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 							name      :'CIVIL_STATUS',
 							inputValue: 'Single',
 							id        : 'cs1',
-							labelWidth: 120		
+							width     : 80
 						}, {
 							boxLabel  : 'Married',
 							name      :'CIVIL_STATUS',
 							inputValue: 'Married',
-							id        : 'cs2'	
+							id        : 'cs2',
+							width     : 80
 						}, {
 							boxLabel  : 'Both',
 							name      :'CIVIL_STATUS',
 							inputValue: 'Both',
-							id        : 'cs3'	
+							id        : 'cs3',
+							width     : 80							
 						}
 					]
 				},
