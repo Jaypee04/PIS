@@ -111,17 +111,17 @@ Ext.define('NOMINEES',{
 Ext.define('REPORT_OGT',{
 	extend: 'Ext.data.Model',
 	fields: [
-		'CourseCode', 
-		'instName',
-		'venue',
 		{
-			name: 'COURSESTART', 
-			type: 'date'
+			name:'COURSESTART',
+			type:'date'
 		},
 		{
-			name: 'COURSEEND', 
-			type: 'date'
-		}
+			name:'COURSEEND',
+			type:'date'
+		},
+		'CourseCode', 
+		'instName',
+		'venue'		
 		//'OGTOFATTENDEES',	
 	],
 	proxy: {
@@ -132,18 +132,18 @@ Ext.define('REPORT_OGT',{
 //report training
 Ext.define('REPORT_TRAINING',{
 	extend: 'Ext.data.Model',
-	fields: [
-		'CourseCode', 
-		'instName',
-		'venue',
+	fields:[
 		{
-			name: 'COURSESTART', 
-			type: 'date'
+			name:'COURSESTART',
+			type:'date'
 		},
 		{
-			name: 'COURSEEND', 
-			type: 'date'
-		}
+			name:'COURSEEND',
+			type:'date'
+		},
+		'CourseCode', 
+		'instName',
+		'venue'
 		//'OGTOFATTENDEES',	
 	],
 	proxy: {
@@ -154,24 +154,52 @@ Ext.define('REPORT_TRAINING',{
 //report training institution
 Ext.define('REPORT_TRAININGINST',{
 	extend: 'Ext.data.Model',
-	fields: [
+	fields:[
+		{
+			name:'courseStart',
+			type:'date'
+		},
+		{
+			name:'courseEnd',
+			type:'date'
+		},
 		'CourseCode', 
 		'instName',
-		'venue',
-		'courseStart',
-		'courseEnd',
+		'venue',		
 		'noAttendees'	
 	],
 	proxy: {
 		type: 'rest',
 		url: '/training/report_traininginst'
 	}
+});
+//query training
+ Ext.define('QUERY_TRAINING',{
+	extend: 'Ext.data.Model',
+	fields: [
+		{
+			name:'courseStart',
+			type:'string'
+		},
+		{
+			name:'courseEnd',
+			type:'string'
+		},
+		'courseName', 
+		'instName',
+		'venue',		
+		'noAttendees'	
+	],
+	proxy: {
+		type: 'rest',
+		url: '/training/query_training'
+	}
 }); 
 var trainingGrid = Ext.create('Ext.grid.Panel', {
 	itemId: 'trainingGrid',
 	title: 'List of trainings',
 	tools: [
-		{
+		/* {
 			xtype: 'combo',
 			fieldLabel:'Select search',
 			itemId:'cboSearch',
@@ -186,7 +214,7 @@ var trainingGrid = Ext.create('Ext.grid.Panel', {
 			displayField: 'label',
 			valueField: 'value',
 			editable: false
-		},
+		}, */
 		{ 
 			xtype: 'textfield', 
 			emptyText: 'filter',
@@ -264,7 +292,8 @@ var trainingGrid = Ext.create('Ext.grid.Panel', {
 				
 				var click = trainingForm.down('#requirementsForm').down('#btnSave');//.down('#btnSave').disabled = true;
 				click.disabled=true;
-				
+				var click2 = trainingForm.down('#requirementsForm').down('#btnUpdate');
+				click2.disabled = false;
 			}
 		}
 	},
@@ -293,7 +322,10 @@ var trainingGrid = Ext.create('Ext.grid.Panel', {
 				trainingForm.loadRecord(rec);
 				trainingForm.getLastCode();
 				maintenancePanel.switch(trainingForm);
-				
+				var click = trainingForm.down('#requirementsForm').down('#btnUpdate');
+				click.disabled=true;
+				var click2 = trainingForm.down('#requirementsForm').down('#btnSave');
+				click2.disabled = false;
 			}
 		}
 	]
@@ -450,7 +482,7 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 			bodyPadding:20,
 			fbar: [
 				'->',
-				{
+				/* {
 					xtype:'button',
 					text: 'Click Me',
 					handler: function(){
@@ -460,7 +492,7 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 						var trainingData = rec.data;
 						
 					}
-				},
+				}, */
 				{
 					xtype:'button',
 					text: 'Save',
@@ -514,6 +546,7 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 				{
 					xtype:'button',
 					text: 'Update',
+					itemId:'btnUpdate',
 					handler: function(){
 						
 						var rec = trainingForm.getRecord();
@@ -835,7 +868,6 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 		
 	]
 });
-
 //Report Training
 var reportgrid2 = Ext.create('Ext.grid.Panel', {
 			xtype: 'grid',
@@ -845,7 +877,8 @@ var reportgrid2 = Ext.create('Ext.grid.Panel', {
 			columns: [
 				{
 					text: 'Course Description',
-					dataIndex: 'coursename'
+					dataIndex: 'coursename',
+					flex: 1.5
 				},
 				{
 					header: '<center>Training <br> Institution<\center>', 
@@ -855,19 +888,19 @@ var reportgrid2 = Ext.create('Ext.grid.Panel', {
 				{
 					text: 'Venue',
 					dataIndex: 'venue',
-					flex: 1
+					flex: 1.5
 				},
 				{
 					text: 'Date Start',
 					dataIndex: 'COURSESTART',
-					width: 110,
-					renderer: Ext.util.Format.dateRenderer('M d Y')				
+					width: 150,
+					renderer: Ext.util.Format.dateRenderer('Y-m-d')		
 				},
 				{
 					text: 'Date End',
 					dataIndex: 'COURSESTART',
-					width: 110,
-					renderer: Ext.util.Format.dateRenderer('M d Y')				
+					width: 150,
+					renderer: Ext.util.Format.dateRenderer('Y-m-d')		
 				}
 				/* {
 					text: 'No. of Attendees',
@@ -876,6 +909,7 @@ var reportgrid2 = Ext.create('Ext.grid.Panel', {
 				} */
 			],	
 			store: Ext.create('Ext.data.Store', {
+				storeId:'storeTraining',
 				model: 'REPORT_TRAINING',			
 				autoLoad: true,
 				autoSync: true,
@@ -891,7 +925,8 @@ var reportgrid2 = Ext.create('Ext.grid.Panel', {
 			columns: [
 				{
 					text: 'Course Description',
-					dataIndex: 'coursename'
+					dataIndex: 'coursename',
+					flex: 1.5
 				},
 				{
 					header: '<center>Training <br> Institution<\center>', 
@@ -901,19 +936,19 @@ var reportgrid2 = Ext.create('Ext.grid.Panel', {
 				{
 					text: 'Venue',
 					dataIndex: 'venue',
-					flex: 1
+					flex: 1.5
 				},
 				{
 					text: 'Date Start',
 					dataIndex: 'COURSESTART',
-					width: 110,
-					renderer: Ext.util.Format.dateRenderer('M d Y')
+					width: 150,
+					renderer: Ext.util.Format.dateRenderer('Y-m-d')
 				},
 				{
 					text: 'Date End',
 					dataIndex: 'COURSEEND',
-					width: 110,
-					renderer: Ext.util.Format.dateRenderer('M d Y')
+					width: 150,
+					renderer: Ext.util.Format.dateRenderer('Y-m-d')
 				}
 				
 				/* {
@@ -923,6 +958,7 @@ var reportgrid2 = Ext.create('Ext.grid.Panel', {
 				} */
 			],	
 			store: Ext.create('Ext.data.Store', {
+				storeId:'storeTrainingogt',
 				model: 'REPORT_OGT',			
 				autoLoad: true,
 				autoSync: true,
@@ -965,7 +1001,8 @@ var reportgrid2 = Ext.create('Ext.grid.Panel', {
 			columns: [
 				{
 					text: 'Course Description',
-					dataIndex: 'courseName'
+					dataIndex: 'courseName',
+					flex: 1.5
 				},		
 				{
 					text: 'Institution Name',
@@ -975,20 +1012,20 @@ var reportgrid2 = Ext.create('Ext.grid.Panel', {
 				{
 					text: 'Venue',
 					dataIndex: 'venue',
-					flex: 1
+					flex: 1.5
 				},
 				
 				{
 					text: 'Date Start',
 					dataIndex: 'courseStart',
 					width: 110,
-					renderer: Ext.util.Format.dateRenderer('M d Y')
+					renderer: Ext.util.Format.dateRenderer('Y-m-d')
 				},
 				{
 					text: 'Date End',
 					dataIndex: 'courseEnd',
 					width: 110,
-					renderer: Ext.util.Format.dateRenderer('M d Y')
+					renderer: Ext.util.Format.dateRenderer('Y-m-d')
 				},
 				{
 					text: 'No. of Attendees',
@@ -1014,6 +1051,34 @@ var queryGrid = Ext.create('Ext.grid.Panel', {
 			xtype: 'textfield', 
 			emptyText: 'Search',
 			enableKeyEvents: true,
+			listeners:{
+				change: function(elem,newValue,oldValue){	
+				/* var filters = [
+					new Ext.util.Filter({
+						filterFn: function(item){
+							return item.get('instName') == newValue || item.get('venue') == newValue;
+						}
+					})
+				]; */
+				//yyy
+		 var filters = [
+			new Ext.util.Filter({
+			 filterFn: function (item) {
+				 return item.get('instName').toLowerCase().indexOf(newValue.toLowerCase()) > -1                                 
+					 || item.get('courseName').toLowerCase().indexOf(newValue.toLowerCase()) > -1
+					 || item.get('venue').toLowerCase().indexOf(newValue.toLowerCase()) > -1
+					 || item.get('courseStart').toLowerCase().indexOf(newValue.toLowerCase()) > -1
+					 || item.get('courseEnd').toLowerCase().indexOf(newValue.toLowerCase()) > -1;
+					 
+				}	
+			})
+        ];
+					var y = Ext.data.StoreManager.lookup('storeTrainingquery');
+					y.clearFilter();		
+					y.filter(filters);
+
+					}
+			},				
 			triggers: {
 				clear: {
 					cls: 'x-form-clear-trigger',
@@ -1023,57 +1088,75 @@ var queryGrid = Ext.create('Ext.grid.Panel', {
 				}
 			}
 		}
-	],
+	],	
 	columns: [
 		{ 
-			header: '<center>Course<\center>', 
+			header: '<center>Course Description<\center>', 
 			autoScroll:true,
-			dataIndex: 'ProgressCourse', 
+			dataIndex: 'courseName', 
 			editor: 'textfield', 
 			fixed:true, 
 			menuDisabled:true, 
 			sortable:false,
-			flex: .7
+			flex: 2
 			//emptyText: "No Record to Display"
 			
 		},
 		{ 
 			header: '<center>Training <br> Institution<\center>', 
-			dataIndex: 'ProgressInstitution', 
+			dataIndex: 'instName', 
 			editor: 'textfield', 
 			fixed:true, 
 			menuDisabled:true, 
 			sortable:false,
-			flex: 1.5 
+			flex: 2
 		},
 		{
 			header: '<center>Venue<\center>',
-			dataIndex: 'ProgressVenue', 
+			dataIndex: 'venue', 
 			editor: 'textfield', 
 			fixed:true, 
 			menuDisabled:true, 
 			sortable:false,	
-			flex: 1.5
+			flex: 2
 		},
 		{
-			header: '<center>Date<\center>', 
-			dataIndex: 'ProgressDate', 
+			header: '<center>Date Start<\center>', 
+			dataIndex: 'courseStart', 
+			editor: 'textfield', 
+			fixed:true, 
+			menuDisabled:true, 
+			sortable:false,
+			flex: .7,
+			renderer: Ext.util.Format.dateRenderer('Y-m-d')
+		},	
+		{
+			header: '<center>Date End<\center>', 
+			dataIndex: 'courseEnd', 
+			editor: 'textfield', 
+			fixed:true, 
+			menuDisabled:true, 
+			sortable:false,	
+			flex: .7,
+			renderer: Ext.util.Format.dateRenderer('Y-m-d')
+		},		
+		{ 
+			header: '<center>No. of Attendees</center>', 
+			dataIndex: 'noAttendees', 
 			editor: 'textfield', 
 			fixed:true, 
 			menuDisabled:true, 
 			sortable:false,
 			flex: .7
-		},						 	
-		{ 
-			header: '<center>No. of Attendees</center>', 
-			dataIndex: 'ProgressAttendees', 
-			editor: 'textfield', 
-			fixed:true, 
-			menuDisabled:true, 
-			sortable:false,
-			flex: .9
 		}													
-	],			
+	],
+			store: Ext.create('Ext.data.Store', {
+				storeId:'storeTrainingquery',
+				model: 'QUERY_TRAINING',			
+				autoLoad: true,
+				autoSync: true,
+				sortOnLoad: true
+		}),	
 });
 //Training Institution Grid
 var trainingInstitutionGrid = Ext.create('Ext.grid.Panel', {
@@ -1142,7 +1225,7 @@ var trainingInstitutionGrid = Ext.create('Ext.grid.Panel', {
 		{ 
 			header: '<center>Training Institution</center>',
 			dataIndex: 'INSTNAME',
-			flex:1,
+			flex:2,
 			menuDisabled:true, 
 			editor: 'textfield'
 		},
@@ -1208,8 +1291,8 @@ var trainingInstitutionGrid = Ext.create('Ext.grid.Panel', {
 				var store = grid.getStore();
 				var rowEdit = grid.getPlugin('rowEditingPlugin');
 				var rec = Ext.create('INSTITUTE_LIB',{
-					INSTCODE: '[new]',
-					INSTNAME: null,
+					INSTCODE: null,
+					INSTNAME: '[new]',
 					INSTADDRESS: null,
 					INSTCONTACT: null,
 					INSTPHONE: null,

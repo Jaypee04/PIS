@@ -262,6 +262,27 @@ function setRoutes(){
 				else 
 					res.json(rs);
 			}
+		); 	
+	});
+	//querytraining
+	app.get('/training/query_training', function(req, res){
+		var sql = MultilineWrapper(function(){/*
+			 select COUNT(approve) as noAttendees,course_lib.courseName,instName,venue,courseStart,courseEnd from nominees 
+				left outer join training_invitation on training_invitation.invitecode = nominees.invitecode 
+				left outer join institute_lib on institute_lib.instcode = training_invitation.instcode 
+				left outer join course_lib on course_lib.coursecode = training_invitation.coursecode 
+				where approve = '1' 
+				 group by courseStart,courseEnd,course_lib.courseName,instName,venue
+		*/});
+		query3(
+			sql,
+			{},{},
+			function(err, rs){
+				if(err)
+					res.json(err)
+				else 
+					res.json(rs);
+			}
 		); 
 		
 	});
