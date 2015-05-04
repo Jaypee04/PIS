@@ -197,11 +197,111 @@ function setRoutes(){
 		); 
 		
 	});
-	//
-	app.get('/training/nominees', function(req, res){
-		//console.log('nominees');
+	//Nominees
+	app.get('/training/nominees/:INVITECODE', function(req, res){
+		var connection = new mssql.Connection(config, function(err) {
+			var sql = MultilineWrapper(function(){/*
+				SELECT INVITECODE, EMPID ,FIRST_M+' '+MIDDLE_M+' '+LAST_M AS EMPLOYEE_NAME, APPROVE, REMARKS
+				FROM NOMINEES LEFT OUTER JOIN plant
+				ON NOMINEES.EMPID = plant.emp_id
+				WHERE INVITECODE = @INVITECODE
+				AND APPROVE = '1'
+			*/});
+			var ps = new mssql.PreparedStatement(connection);
+			ps.input('INVITECODE', mssql.VarChar(50));
+			ps.prepare(sql, function(err) {
+				// ... error checks 
+				
+				ps.execute({param: req.params.INVITECODE}, function(err, recordset) {
+					// ... error checks 
+					ps.unprepare(function(err) {
+							// ... error checks 
+							
+					});
+					
+					var nominees = recordset;
+					console.log(nominees); 
+					res.json(nominees);
+				});
+			});
+		});
+		
+		
 		
 	});
+	app.get('/training/nominees', function(req, res){
+	});
+	
+	app.post('/training/save/nominees', function(req, res){
+		
+		var sql = MultilineWrapper(function(){/*
+			INSERT INTO [NOMINEES]
+			   ([INVITECODE]
+			   ,[EMPID]
+			   ,[APPROVE]
+			   ,[REMARKS])
+			VALUES
+			   (@INVITECODE, 
+			    @EMPID, 
+				@APPROVE, 
+				@REMARKS)
+		*/});
+		
+		var paramDef = {
+			'INVITECODE': mssql.VarChar(50),
+			'EMPID': mssql.VarChar(50),
+			'APPROVE': mssql.VarChar(50),
+			'REMARKS': mssql.VarChar(mssql.MAX)
+		};
+		
+		var paramVal = req.body.trainingValues;
+		query3(sql, paramDef, paramVal,
+			function(err, rs){
+			
+				res.json({success: true, message: rs});
+
+			}
+		); 
+	
+	});
+	
+	//Saves Training Progress
+	app.post('/training/save/progress', function(req, res){
+		
+		var sql = MultilineWrapper(function(){/*
+			INSERT INTO [PROGRESS]
+			   ([INVITECODE]
+			   ,[EMPID]
+			   ,[PROGDATE]
+			   ,[DETAILS]
+			   ,[PROGATT])
+			VALUES
+			   (@INVITECODE, 
+			    @EMPID, 
+				@PROGDATE, 
+				@DETAILS,
+				@PROGATT)
+		*/});
+		
+		var paramDef = {
+			'INVITECODE': mssql.VarChar(50),
+			'EMPID': mssql.VarChar(50),
+			'PROGDATE': mssql.Date,
+			'DETAILS': mssql.VarChar(mssql.MAX),
+			'PROGATT': mssql.VarBinary(mssql.MAX)
+		};
+		
+		var paramVal = req.body.trainingValues;
+		query3(sql, paramDef, paramVal,
+			function(err, rs){
+			
+				res.json({success: true, message: rs});
+
+			}
+		); 
+	
+	});
+	
 	//
 	app.get('/training/report_training', function(req, res){
 		var sql = MultilineWrapper(function(){/*
@@ -286,6 +386,7 @@ function setRoutes(){
 		); 
 		
 	});
+	
 	app.get('/getinst',function(req,res){		
 		var connection = new mssql.Connection(config, function(err) {
 			var request = new mssql.Request(connection);
@@ -296,6 +397,8 @@ function setRoutes(){
 		});
 		
 	});
+	
+	//get Training Institution library
 	app.get('/training/institute_lib', function(req, res){
 		var sql = MultilineWrapper(function(){/*
 			SELECT * FROM INSTITUTE_LIB
@@ -312,9 +415,47 @@ function setRoutes(){
 		); 
 		
 	});
+	
+	//get Training Progress library
+	app.get('/training/progress', function(req, res){
+		var sql = MultilineWrapper(function(){/*
+			SELECT * FROM PROGRESS
+		*/});
+		query3(
+			sql,
+			{},{},
+			function(err, rs){
+				if(err)
+					res.json(err)
+				else 
+					res.json(rs);
+			}
+		); 
+		
+	});
+	
+	//get Training Course library
 	app.get('/training/course_lib', function(req, res){
 		var sql = MultilineWrapper(function(){/*
 			SELECT * FROM COURSE_LIB
+		*/});
+		query3(
+			sql,
+			{},{},
+			function(err, rs){
+				if(err)
+					res.json(err)
+				else 
+					res.json(rs);
+			}
+		); 
+		
+	});
+	
+	//get Special Order library
+	app.get('/training/special_order', function(req, res){
+		var sql = MultilineWrapper(function(){/*
+			SELECT * FROM special_order
 		*/});
 		query3(
 			sql,
@@ -504,6 +645,19 @@ function setRoutes(){
 		
 	});
 	
+	//returns employee
+	app.get('/getEmployee',function(req,res){
+		
+		var connection = new mssql.Connection(config, function(err) {
+			var request = new mssql.Request(connection);
+			request.query("SELECT DISTINCT EMP_ID as EMPLOYEE_ID, first_m + ' ' + last_m as EMPLOYEE_NAME FROM plant", function(err, recordset) {
+				var employees = recordset; 
+				res.json(employees);
+				
+			});
+		});
+		
+	});
 	
 	//returns degree
 	app.get('/getDegree',function(req,res){
@@ -526,6 +680,19 @@ function setRoutes(){
 			request.query("SELECT [APPT_CODE] as appointmentCode,[APPT_DESC] as appointmentDescription from APPT ORDER BY APPT_DESC", function(err, recordset) {
 				var appointment = recordset; 
 				res.json(appointment);
+			});
+		});
+		
+	});
+	
+	//returns trainings
+	app.get('/getInvitation',function(req,res){
+		
+		var connection = new mssql.Connection(config, function(err) {
+			var request = new mssql.Request(connection);
+			request.query("SELECT DISTINCT INVITECODE, TRAINING_INVITATION.COURSECODE,COURSENAME FROM TRAINING_INVITATION LEFT OUTER JOIN COURSE_LIB ON TRAINING_INVITATION.COURSECODE = COURSE_LIB.COURSECODE ORDER BY INVITECODE", function(err, recordset) {
+				var institution = recordset; 
+				res.json(institution);
 			});
 		});
 		
@@ -690,9 +857,9 @@ function setRoutes(){
 					
 					var paramDef = {
 						'COURSECODE': mssql.VarChar(50),
-						'COURSENAME': mssql.VarChar(50),
-						'COURSEDESC': mssql.VarChar(50),
-						'COURSEPREQ': mssql.VarChar(50)
+						'COURSENAME': mssql.VarChar(150),
+						'COURSEDESC': mssql.VarChar(150),
+						'COURSEPREQ': mssql.VarChar(150)
 					};
 					
 					var sql = "INSERT INTO COURSE_LIB (COURSECODE,COURSENAME,COURSEDESC,COURSEPREQ) VALUES (@COURSECODE,@COURSENAME,@COURSEDESC,@COURSEPREQ)";
@@ -741,6 +908,128 @@ function setRoutes(){
 		})
 	});
 	
+	//Saves Special Order
+	app.post('/saveSpecialOrder', function(req, res){
+		var connection = new mssql.Connection(config, function(err) {
+			
+			var so = req.body.specialOrderList;
+			async.series([
+				//Delete SPECIAL_ORDER
+				function(callback){	
+					var paramDef= {
+						
+					};
+					var sql="DELETE FROM SPECIAL_ORDER";
+					
+					var values = {
+						
+					};
+					query2(	connection, 
+						sql, 
+						paramDef, 
+						values,
+						function(err, rs){
+							callback(err);
+					});
+					console.log('SPECIAL_ORDER: Deleted Successfully');
+				},
+				
+				//Update SPECIAL_ORDER
+				function(callback){	
+					
+					var paramDef = {
+						'INVITECODE': mssql.VarChar(50),
+						'SONO': mssql.VarChar(150),
+						'SODATE': mssql.Date,
+						'SOSUBJECT': mssql.VarChar(150)
+					};
+					
+					var sql = "INSERT INTO SPECIAL_ORDER (INVITECODE,SONO,SODATE,SOSUBJECT) VALUES (@INVITECODE,@SONO,@SODATE,@SOSUBJECT)";
+					
+					async.forEachSeries(so, function(s,callback){
+						var orderDate = s.SODATE==null?null:new Date(s.SODATE);
+						var values = {
+							INVITECODE:s.INVITECODE, 
+							SONO:s.SONO,
+							SODATE:orderDate,
+							SOSUBJECT:s.SOSUBJECT
+						};
+						query2(connection, 
+							sql, 
+							paramDef, 
+							values,
+							function(err, rs){
+								if(err)
+								{
+									console.log('SPECIAL_ORDER: Update Failed!');
+									callback(new Error(err));
+								}
+								else
+								{
+									console.log('SPECIAL_ORDER: Updated Successfully');	
+									callback(null);
+								}
+							}
+						);
+						
+					},
+					function(err)
+					{
+						callback();
+					}
+					);
+					
+				}
+			],
+			function (err) {
+				if(err)
+				{res.json(err);}
+				console.log("xxxxxxxxxxx", err);
+				res.json({success: true});
+			});
+		})
+	});
+	
+	//Updates Special Order
+	app.post('/updateSpecialOrder', function(req, res){
+		var connection = new mssql.Connection(config, function(err) {
+			
+			var so = req.body.specialOrderList;
+			var paramDef = {
+				'SONO': mssql.VarChar(150),
+				'SODATE': mssql.Date,
+				'SOSUBJECT': mssql.VarChar(150)
+			};
+			
+			var sql = "UPDATE SPECIAL_ORDER SET SODATE=@SODATE,SOSUBJECT=@SOSUBJECT WHERE SONO=@SONO";
+			var orderDate = so.SODATE==null?null:new Date(so.SODATE);
+			var values = {
+				SONO:so.SONO,
+				SODATE:orderDate,
+				SOSUBJECT:so.SOSUBJECT
+			};
+			
+			query2(connection, 
+				sql, 
+				paramDef, 
+				values,
+				function(err, rs){
+					if(err)
+					{
+						console.log('SPECIAL_ORDER: Update Failed!');
+					}
+					else
+					{
+						console.log('SPECIAL_ORDER: Updated Successfully!');
+						res.json({success: true});
+					}
+				}
+			);
+
+		})
+	});	
+			
+			
 	app.post('/updateRecord', function(req, res){
 				
 		var connection = new mssql.Connection(config, function(err) {

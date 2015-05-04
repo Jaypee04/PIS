@@ -1,4 +1,5 @@
-Ext.require(['Ext.data.*', 'Ext.grid.*']);
+Ext.Loader.setConfig({enabled: true});
+Ext.require(['Ext.data.*', 'Ext.grid.*', 'Ext.ux.grid.Printer']);
 
 Ext.define('TRAINING_INVITATION',{
 	extend: 'Ext.data.Model',
@@ -68,6 +69,25 @@ Ext.define('INSTITUTE_LIB',{
 
 });
 
+//Training Progress
+Ext.define('PROGRESS',{
+	extend: 'Ext.data.Model',
+	fields: [
+		'INVITECODE',
+		'EMPID',
+		'PROGDATE', 
+		'DETAILS',
+		'PROGATT'
+	],
+	idProperty: 'INVITECODE',
+	proxy: {
+		type: 'rest',
+		url: '/training/progress'
+	}
+
+});
+
+//Course Library
 Ext.define('COURSE_LIB',{
 	extend: 'Ext.data.Model',
 	fields: [
@@ -84,6 +104,23 @@ Ext.define('COURSE_LIB',{
 	proxy: {
 		type: 'rest',
 		url: '/training/course_lib'
+	}
+
+});
+
+//Special order
+Ext.define('SPECIAL_ORDER',{
+	extend: 'Ext.data.Model',
+	fields: [
+		'INVITECODE',
+		'SONO',
+		'SODATE', 
+		'SOSUBJECT'
+	],
+	idProperty: 'SONO',
+	proxy: {
+		type: 'rest',
+		url: '/training/special_order'
 	}
 
 });
@@ -195,29 +232,15 @@ Ext.define('REPORT_TRAININGINST',{
 		url: '/training/query_training'
 	}
 }); 
+
+//List of Trainings Grid
 var trainingGrid = Ext.create('Ext.grid.Panel', {
 	itemId: 'trainingGrid',
 	title: 'List of trainings',
 	tools: [
-		/* {
-			xtype: 'combo',
-			fieldLabel:'Select search',
-			itemId:'cboSearch',
-			store: Ext.create('Ext.data.Store',{
-				fields: ['value', 'label'],
-				data: [
-					{value: '1', label: 'Invite Code'},
-					{value: '2', label: 'Course'},
-					{value: '3', label: 'Institution'}
-				]
-			}),
-			displayField: 'label',
-			valueField: 'value',
-			editable: false
-		}, */
 		{ 
 			xtype: 'textfield', 
-			emptyText: 'filter',
+			emptyText: 'Course Name',
 			enableKeyEvents: true,
 			listeners: {
 				change: function(cmp, e){
@@ -287,13 +310,14 @@ var trainingGrid = Ext.create('Ext.grid.Panel', {
 	listeners: {
 		cellclick: function(grid, td, cellIndex, rec){
 			if(cellIndex === 1){
-				maintenancePanel.switch(trainingForm);
+				trainingMaintenancePanel.switch(trainingForm);
 				trainingForm.loadRecord(rec);
+				trainingForm.disableAll();
 				
 				var click = trainingForm.down('#requirementsForm').down('#btnSave');//.down('#btnSave').disabled = true;
 				click.disabled=true;
-				var click2 = trainingForm.down('#requirementsForm').down('#btnUpdate');
-				click2.disabled = false;
+				/* var click2 = trainingForm.down('#requirementsForm').down('#btnUpdate');
+				click2.disabled = false; */
 			}
 		}
 	},
@@ -321,9 +345,10 @@ var trainingGrid = Ext.create('Ext.grid.Panel', {
 				rec.phantom = true;
 				trainingForm.loadRecord(rec);
 				trainingForm.getLastCode();
-				maintenancePanel.switch(trainingForm);
+				trainingMaintenancePanel.switch(trainingForm);
 				var click = trainingForm.down('#requirementsForm').down('#btnUpdate');
 				click.disabled=true;
+				var enableAllComponents = trainingForm.enableAll();
 				var click2 = trainingForm.down('#requirementsForm').down('#btnSave');
 				click2.disabled = false;
 			}
@@ -369,6 +394,40 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 		me.down('#txtInviteCode').setValue(inviteCode);
 		
 	},
+	enableAll:function(){
+		var me = this;
+		me.down('#cboInstitution').disabled = false;
+		me.down('#cboCourse').disabled = false;
+		me.down('#dteStart').disabled = false;
+		me.down('#dteEnd').disabled = false;
+		me.down('#txtVenue').disabled = false;
+		me.down('#chkLocal').disabled = false;
+		me.down('#btnUpdate').disabled = false;
+		me.down('#btnEdit').disabled = true;
+		/*me.down('').disabled = false;
+		me.down('').disabled = false;
+		me.down('').disabled = false;
+		me.down('').disabled = false;
+		me.down('').disabled = false;
+		me.down('').disabled = false; */
+	},
+	disableAll:function(){
+		var me = this;
+		me.down('#cboInstitution').disabled = true;
+		me.down('#cboCourse').disabled = true;
+		me.down('#dteStart').disabled = true;
+		me.down('#dteEnd').disabled = true;
+		me.down('#txtVenue').disabled = true;
+		me.down('#chkLocal').disabled = true;
+		me.down('#btnUpdate').disabled = true;
+		/*me.down('').disabled = true;
+		me.down('').disabled = true;
+		me.down('').disabled = true;
+		me.down('').disabled = true;
+		me.down('').disabled = true;
+		me.down('').disabled = true;
+		me.down('').disabled = true; */
+	},
 	items:[
 		{
 			xtype:'panel',
@@ -376,7 +435,17 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 			title: 'Training Details',
 			bodyPadding:20,
 			trackResetOnLoad: true,
-			
+			tools:[
+				{
+					xtype:'button',
+					text:'Edit',
+					itemId:'btnEdit',
+					handler: function(){
+						var me = this.up('#mainPanel');
+						me.enableAll();
+					}
+				}
+			],
 			items:[
 				{
 					xtype: 'textfield',
@@ -389,6 +458,7 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 				{
 					xtype: 'combobox', 
 					fieldLabel: 'Institution',
+					itemId:'cboInstitution',
 					labelWidth: 120,
 					width: 600,
 					queryMode: 'local',
@@ -415,6 +485,7 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 				{
 					xtype: 'combobox', 
 					fieldLabel: 'Course',
+					itemId:'cboCourse',
 					labelWidth: 120,
 					width: 600,
 					queryMode: 'local',
@@ -440,6 +511,7 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 				{
 					xtype: 'datefield', 
 					fieldLabel: 'Start',
+					itemId:'dteStart',
 					labelWidth: 120,
 					name: 'COURSESTART',
 					format: 'm/d/Y',
@@ -447,6 +519,7 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 				{
 					xtype: 'datefield', 
 					fieldLabel: 'End',
+					itemId:'dteEnd',
 					labelWidth: 120,
 					name: 'COURSEEND',
 					format: 'm/d/Y',
@@ -454,12 +527,14 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 				{
 					xtype: 'textareafield', 
 					fieldLabel: 'Venue',
+					itemId:'txtVenue',
 					labelWidth: 120,
 					name: 'VENUE'
 				},
 				{
 					xtype: 'checkboxfield', 
 					fieldLabel: 'Local',
+					itemId:'chkLocal',
 					labelWidth: 120,
 					name: 'LOCAL'
 				}, 
@@ -603,7 +678,7 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 						
 						trainingGrid.getStore().remove(rec);
 						trainingForm.reset();
-						maintenancePanel.switch(trainingGrid);
+						trainingMaintenancePanel.switch(trainingGrid);
 						
 					}
 				},
@@ -638,7 +713,7 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 							});
 						} else { */
 							trainingForm.reset(true);
-							maintenancePanel.switch(trainingGrid);
+							trainingMaintenancePanel.switch(trainingGrid);
 						//}
 						
 						
@@ -835,34 +910,130 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 					xtype: 'grid',	
 					columns: [
 						{
-							text: 'Employee ID',
+							header: 'Employee ID',
 							dataIndex: 'EMP_ID',
-							flex: 0.45
+							editor:'textfield',
+							flex: 0.30
 						},
 						{
-							header: 'Name of Employee', 
+							header: 'Employee Name', 
 							dataIndex: 'EMPLOYEE_NAME',
-							flex: 1	
+							editor: 'combo',
+							queryMode: 'local',
+							enableRegEx: true,
+							forceSelection: true,
+							name: 'EMPLOYEE_NAME',
+							valueField: 'EMPLOYEE_NAME',
+							displayField: 'EMPLOYEE_NAME',
+							store: Ext.create('Ext.data.Store',{
+								autoLoad: true,
+								fields: ['EMPLOYEE_ID', 'EMPLOYEE_NAME'],
+								proxy: {
+									type: 'ajax',
+									url: '/getEmployee'
+								}
+							}),
+							listeners: {
+								change: function(combo, newVal, oldVal){
+									nomineesForm.down('#EMPLOYEE_NAME').setValue(this.getRawValue());
+								}
+							},
+							flex: 0.50
 						},	
 						{
-							text: '<center>Age</center>',
-							dataIndex: 'AGE',
+							header: '<center>Years in</br>Government</center>',
+							dataIndex: 'YRSGOVT',
+							editor:'textfield',
 							flex: 0.25
 						},
 						{
-							text: '<center>Years in </br> Government</center>',
-							dataIndex: 'YRSGOVT',
-							flex: 0.35
+							header: '<center>Remarks</center>',
+							dataIndex: 'REMARKS',
+							editor:'textfield',
+							flex: 1
 						},
 						{
-							text: 'COURSE',
-							dataIndex: 'COURSE_T',
-							flex: 1.25
+							xtype: 'checkcolumn',
+							header: 'Approve?',
+							dataIndex: 'APPROVE',
+							width: 60,
+							flex: 0.20,
+							editor: {
+								xtype: 'checkbox',
+								cls: 'x-grid-checkheader-editor'
+							}
 						}
+					],
+					buttons: [
+						{
+							text: 'New Nominee',
+							handler: function(){
+								var grid = this.up('grid');
+								var store = grid.getStore();
+								var rowEdit = grid.getPlugin('rowEditingPlugin');
+								var rec = Ext.create('NOMINEES',{
+									EMP_ID:'[new]',
+									EMPLOYEE_NAME:null,
+									AGE:null, 
+									YRSGOVT:null,
+								});
+								store.add(rec);
+								rowEdit.startEdit(grid.getStore().getData().getCount()-1, 0);
+							}
+						},
+						{
+							xtype:'button',
+							text: 'Save',
+							handler: function(){
+								var me = this;
+								var panel = me.up('#trainingCourseGrid');
+								var course = panel.getTrainingCourse();
+								
+								Ext.Ajax.request({
+									url: '/updateTrainingCourse',
+									method: 'POST',
+									jsonData: {
+										courseList: course
+									},
+									success: function(response){
+										Ext.Msg.alert('Success', 'Course library has been updated!');
+									},
+									failure: function(response){
+										Ext.Msg.alert('Error', response.statusText);
+										
+									}
+								
+								}); 
+							}
+						},
+						{
+							text: 'Remove',
+							handler: function() 
+							{
+								var grid = this.up('grid');
+								var store = grid.getStore();
+								var rowEdit = grid.getPlugin('rowEditingPlugin');
+								var sm = grid.getSelectionModel();
+								rowEdit.cancelEdit();
+								store.remove(sm.getSelection());
+								if (store.getCount() > 0) {
+									sm.select(0);
+								}
+							},
+							disabled: false
+						}
+					],
+					plugins: [
+						Ext.create('Ext.grid.plugin.RowEditing', {
+							pluginId: 'rowEditingPlugin',
+							clicksToMoveEditor: 1,
+							autoCancel: false
+						})
 					]
 				
 				}
 			],
+			
 			store: Ext.create('Ext.data.Store', {
 				model: 'NOMINEES',
 				autoLoad: true,
@@ -875,58 +1046,917 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 		
 	]
 });
-//Report Training
-var reportgrid2 = Ext.create('Ext.grid.Panel', {
-			xtype: 'grid',
-			itemId: 'trainingGrid2',
-			title: 'Training',			
-			disableSelection: true,					
-			columns: [
-				{
-					text: 'Course Description',
-					dataIndex: 'coursename',
-					flex: 1.5
-				},
-				{
-					header: '<center>Training <br> Institution<\center>', 
-					dataIndex: 'instName',
-					flex: 1			
-				},	
-				{
-					text: 'Venue',
-					dataIndex: 'venue',
-					flex: 1.5
-				},
-				{
-					text: 'Date Start',
-					dataIndex: 'COURSESTART',
-					width: 150,
-					renderer: Ext.util.Format.dateRenderer('Y-m-d')		
-				},
-				{
-					text: 'Date End',
-					dataIndex: 'COURSESTART',
-					width: 150,
-					renderer: Ext.util.Format.dateRenderer('Y-m-d')		
+
+//Training Progress Grid
+var trainingProgressGrid = Ext.create('Ext.grid.Panel', {
+	itemId: 'trainingProgressGrid',
+	title: 'Training Progress',
+	getTrainingCourse: function(){
+		var course = [];
+		
+		
+		var grid = this;
+		var store = grid.getStore();
+		store.clearFilter(true);
+		store.data.each(function(row) {
+			course.push({ 
+				COURSECODE: row.data['COURSECODE'], 
+				COURSENAME: row.data['COURSENAME'],
+				COURSEDESC: row.data['COURSEDESC'],
+				COURSEPREQ: row.data['COURSEPREQ']
+			});
+		});
+		
+		return course;
+		
+	},
+	tools: [
+		
+		{ 
+			xtype: 'textfield', 
+			emptyText: 'Training Progress',
+			enableKeyEvents: true,
+			listeners: {
+				change: function(cmp, e){
+					var store = trainingCourseGrid.getStore();
+					store.filter([{filterFn: function(rec){
+							return rec.get("INVITECODE").toLowerCase().indexOf(cmp.getValue().toLowerCase()) > -1;
+						}
+					}
+					]);
 				}
+			},
+			triggers: {
+				clear: {
+					cls: 'x-form-clear-trigger',
+					handler: function(){
+						this.setValue(null);
+					}
+				}
+			}
+		}
+		
+	],
+	columns: [
+		{ 
+			header: '<center>Invite Code<\center>', 
+			autoScroll:true,
+			dataIndex: 'INVITECODE', 
+			fixed:true, 
+			menuDisabled:true, 
+			sortable:false,
+			flex: .50
+		},				
+		{
+			header: '<center>Employee ID<\center>',
+			dataIndex: 'EMPID', 
+			fixed:true, 
+			menuDisabled:true, 
+			sortable:false,	
+			flex: .50
+		},
+		{
+			header: '<center>Employee Name<\center>',
+			dataIndex: 'EMPNAME', 
+			fixed:true, 
+			menuDisabled:true, 
+			sortable:false,	
+			flex: 1
+		},
+		{
+			header: '<center>Date<\center>',
+			dataIndex: 'PROGDATE', 
+			format:'m/d/Y',
+			fixed:true, 
+			menuDisabled:true, 
+			sortable:false,	
+			renderer: Ext.util.Format.dateRenderer('Y-m-d'),
+			flex: .45
+		},	
+		{
+			header: '<center>Details<\center>',
+			dataIndex: 'DETAILS', 
+			menuDisabled:true, 
+			sortable:false,	
+			flex: 1.5
+		},
+		{ 
+			header: '<center>Attachment</center>',
+			dataIndex: 'PROGATT',
+			flex:.80
+			
+		}
+	
+	],	
+	store: Ext.create('Ext.data.Store', {
+		model: 'PROGRESS',
+		autoLoad: true,
+		autoSync: true,
+		sortOnLoad: true,
+		sorters: {property: 'INVITECODE', direction: 'ASC'}
+	}),	
+	listeners: {
+		cellclick: function(grid, td, cellIndex, rec){
+			if(cellIndex === 1){
+				trainingProgressPanel.switch(progressForm);
+				progressForm.loadRecord(rec);
+			
+			}
+		}
+	},
+	buttons: [
+		{
+			text: 'New Progress',
+			handler: function(){
+				var rec = Ext.create('PROGRESS',{
+					INVITECODE: '[new]',
+					EMPID: null,
+					PROGDATE: null,
+					DETAILS: null,
+					PROGATT: null
+				});
+				rec.phantom = true;
+				progressForm.loadRecord(rec);
+				trainingProgressPanel.switch(progressForm);
+			}
+		}
+		
+	]
+});
+
+//Training Progress Form
+var progressForm = Ext.create('Ext.form.Panel', {
+	itemId: 'progressPanel',
+	bodyPadding: 5,
+	autoScroll:true,
+	items:[
+		{
+			xtype:'panel',
+			itemId: 'progressForm',
+			title: 'Training Progress Details',
+			bodyPadding:20,
+			trackResetOnLoad: true,
+			fbar: [
+				'->',
+				
+				{
+					xtype:'button',
+					text: 'Save',
+					itemId:'btnSave',
+					handler: function(){
+						var me = this.up('panel');
+						var panel = me.up('panel');
+						
+						var rec = progressForm.getRecord();
+						
+						progressForm.updateRecord(rec); 
+						
+						var progressData = rec;
+						console.log(progressData);
+						/* Ext.Ajax.request({
+							url: '/training/save/progress',
+							method: 'POST',
+							jsonData: {
+								progressValues: progressData
+							},
+							success: function(response){
+								Ext.Msg.alert('Success', 'Training has been added!');
+								
+							},
+							failure: function(response){
+								Ext.Msg.alert('Error', response.statusText);
+							}
+						
+						});  */
+						
+						/* if(rec.phantom)
+							trainingGrid.getStore().add(rec); */
+					}
+				},
+				{
+					xtype:'button',
+					text: 'Update',
+					itemId:'btnUpdate',
+					handler: function(){
+						
+					}
+				},
+				{
+					xtype:'button',
+					text: 'Delete',
+					handler: function(){
+						
+					}
+				},
+				'-',
+				{
+					xtype:'button',
+					text: 'Back',
+					handler: function(){
+						progressForm.reset(true);
+						trainingProgressPanel.switch(trainingProgressGrid);
+					}
+				}
+				
+			],
+			items:[
+				{
+					xtype: 'combobox', 
+					fieldLabel: 'Invite Code',
+					itemId:'cboInviteCode',
+					labelWidth: 120,
+					width: 600,
+					queryMode: 'local', 
+					store: Ext.create('Ext.data.Store',{
+						autoLoad: true, 
+						fields: ['INVITECODE', 'COURSENAME'], 
+						storeId:'storeInviteCode',
+						proxy: { 
+							type: 'ajax', 
+							url: '/getInvitation' 
+						}
+						
+					}),
+					displayField:'COURSENAME',
+					valueField: 'INVITECODE',
+					emptyText: 'Select Invite Code',
+					enableRegEx: true,
+					forceSelection: true,
+					name: 'INVITECODE',
+					listeners: {
+						change: function(combo, newVal, oldVal){
+							progressForm.down('#INVITECODE').setValue(this.getRawValue());
+						}
+					}
+				},
+				{
+					xtype: 'combobox', 
+					fieldLabel: 'Employee ID',
+					itemId:'cboInstitution',
+					labelWidth: 120,
+					width: 600,
+					queryMode: 'local',
+					enableRegEx: true,
+					forceSelection: true,
+					name: 'INSTCODE',
+					valueField: 'INSTCODE',
+					displayField: 'INSTNAME',
+					store: Ext.create('Ext.data.Store',{
+						autoLoad: true,
+						fields: ['INSTCODE', 'INSTNAME'],
+						proxy: {
+							type: 'ajax',
+							url: '/getInstitution'
+						}
+					}),
+					listeners: {
+						change: function(combo, newVal, oldVal){
+							trainingForm.down('#INSTNAME').setValue(this.getRawValue());
+						}
+					}
+					
+				},
+				{
+					xtype: 'datefield', 
+					fieldLabel: 'Progress Date',
+					itemId:'dteProgDate',
+					labelWidth: 120,
+					name: 'PROGDATE',
+					format: 'm/d/Y',
+				},
+				{
+					xtype: 'textareafield', 
+					fieldLabel: 'Details',
+					itemId:'txtDetails',
+					labelWidth: 120,
+					width: 600,
+					name: 'DETAILS'
+				},
+				{
+					xtype: 'fileuploadfield', 
+					fieldLabel: 'Attachment',
+					itemId:'fuAttachment',
+					labelWidth: 120,
+					width: 600,
+					name: 'PROGATT',
+					listeners:{
+						change: function(fld, value) {
+						  var newValue = value.replace(/C:\\fakepath\\/g, '');
+						  fld.setRawValue(newValue);                                                         
+						}
+					}
+				}
+				
+			]
+		}
+	]
+});
+
+
+
+//Special Order Grid
+var specialOrderGrid = Ext.create('Ext.grid.Panel', {
+	itemId: 'specialOrderGrid',
+	title: 'Special Order',
+	getSpecialOrder: function(){
+		var sOrder = [];
+
+		var grid = this;
+		var store = grid.getStore();
+		store.clearFilter(true);
+		store.data.each(function(row) {
+			sOrder.push({ 
+				INVITECODE: row.data['INVITECODE'], 
+				SONO: row.data['SONO'],
+				SODATE: row.data['SODATE'],
+				SOSUBJECT: row.data['SOSUBJECT']
+			});
+		});
+		
+		return sOrder;
+		
+	},
+	tools: [
+		
+		{ 
+			xtype: 'textfield', 
+			emptyText: 'Subject',
+			enableKeyEvents: true,
+			listeners: {
+				change: function(cmp, e){
+					var store = specialOrderGrid.getStore();
+					store.clearFilter(true);
+					store.filter([{filterFn: function(rec){
+							return rec.get("SOSUBJECT").toLowerCase().indexOf(cmp.getValue().toLowerCase()) > -1;
+						}
+					}
+					]);
+				}
+			},
+			triggers: {
+				clear: {
+					cls: 'x-form-clear-trigger',
+					handler: function(){
+						this.setValue(null);
+					}
+				}
+			}
+		}
+		
+	],
+	columns: [
+		{ 
+			header: '<center>Invite Code<\center>', 
+			autoScroll:true,
+			dataIndex: 'INVITECODE', 
+			editor: {
+				xtype:'combo', 
+				fixed:true, 
+				menuDisabled:true, 
+				sortable:false,
+				queryMode: 'local', 
+				store: Ext.create('Ext.data.Store',{
+				   autoLoad: true, 
+					fields: ['INVITECODE', 'COURSENAME'], 
+					storeId:'storeInviteCode',
+					proxy: { 
+						type: 'ajax', 
+						url: '/getInvitation' 
+					}
+					
+				}),
+				displayField:'COURSENAME',
+				valueField: 'INVITECODE',
+				emptyText: 'Select Invite Code',
+				renderer: function(val){
+					var ref = Ext.data.StoreManager.lookup('storeInviteCode');
+					index = ref.findExact('INVITECODE',val); 
+					if (index != -1){
+						rs = ref.getAt(index).data; 
+						return rs.COURSENAME; 
+					}
+				}
+			},
+			flex: .35
+		},				
+		{
+			header: '<center>Special Order Number<\center>',
+			dataIndex: 'SONO', 
+			editor: 'textfield', 
+			fixed:true, 
+			menuDisabled:true, 
+			sortable:false,	
+			renderer: function(v){
+				return '<span style="color: blue; cursor: pointer;">' + (v?v:'') + '<span>';
+			},
+			tdCls:'wrap-text',
+			flex: .35
+		},
+		{
+			header: '<center>Special Order Date<\center>',
+			dataIndex: 'SODATE', 
+			editor: 'datefield', 
+			format:'m/d/Y',
+			fixed:true, 
+			menuDisabled:true, 
+			sortable:false,	
+			renderer: Ext.util.Format.dateRenderer('m/d/Y'),
+			flex: .30
+		},	
+		{
+			header: '<center>Subject<\center>',
+			dataIndex: 'SOSUBJECT', 
+			editor: 'textfield', 
+			fixed:true, 
+			menuDisabled:true, 
+			sortable:false,	
+			flex: 1
+		}
+	],	
+	store: Ext.create('Ext.data.Store', {
+		model: 'SPECIAL_ORDER',
+		autoLoad: true,
+		autoSync: true,
+		sortOnLoad: true,
+		sorters: {property: 'SONO', direction: 'ASC'}
+		
+	}),	
+	listeners: {
+		cellclick: function(grid, td, cellIndex, rec){
+			if(cellIndex === 1){
+				specialOrderPanel.switch(specialOrderForm);
+				specialOrderForm.loadRecord(rec);
+				//specialOrderForm.disableAll();
+				
+				Ext.Ajax.request({
+					url: '/training/nominees/'+rec.data.INVITECODE,
+					method: 'GET',
+					success: function(response){
+						var Nominee = response.responseText;
+						console.log(rec.data.INVITECODE);
+						console.log(Ext.decode(Nominee));
+						
+					},
+					failure: function(response){
+						Ext.Msg.alert('Error', response.status);
+						console.log(response.status);
+					}
+				
+				});
+				
+				/* var click = specialOrderForm.down('#btnSave');//.down('#btnSave').disabled = true;
+				click.disabled=true; */
+				/* var click2 = trainingForm.down('#requirementsForm').down('#btnUpdate');
+				click2.disabled = false; */
+			}
+		}
+	},
+	buttons: [
+		{
+			xtype:'button',
+			text: 'New Special Order',
+			handler: function(){
+				var grid = this.up('grid');
+				var store = grid.getStore();
+				var rowEdit = grid.getPlugin('rowEditingPlugin');
+				var rec = Ext.create('SPECIAL_ORDER',{
+					INVITECODE: '[new]',
+					SONO: null,
+					SODATE: null,
+					SOSUBJECT: null
+				});
+				store.add(rec);
+				console.log(grid.getStore().getData().getCount());
+				rowEdit.startEdit(grid.getStore().getData().getCount()-1, 0);
+				
+			}
+		},
+		{
+			xtype:'button',
+			text: 'Save',
+			handler: function(){
+				var me = this;
+				var panel = me.up('#specialOrderGrid');
+				var SO = panel.getSpecialOrder();
+				
+				Ext.Ajax.request({
+					url: '/saveSpecialOrder',
+					method: 'POST',
+					jsonData: {
+						specialOrderList: SO
+					},
+					success: function(response){
+						Ext.Msg.alert('Success', 'Special Order library has been updated!');
+					},
+					failure: function(response){
+						Ext.Msg.alert('Error', response.statusText);
+						
+					}
+				
+				}); 
+			}
+		},
+		{
+			text: 'Remove',
+			handler: function() 
+			{
+				var grid = this.up('grid');
+				var store = grid.getStore();
+				var rowEdit = grid.getPlugin('rowEditingPlugin');
+				var sm = grid.getSelectionModel();
+				rowEdit.cancelEdit();
+				store.remove(sm.getSelection());
+				if (store.getCount() > 0) {
+					sm.select(0);
+				}
+			},
+			disabled: false
+		},
+		{
+			text: 'Print',
+			handler: function(){
+				Ext.ux.grid.Printer.printAutomatically = false;
+	            Ext.ux.grid.Printer.print(specialOrderGrid);
+			}
+		}
+	],
+	plugins: [
+		Ext.create('Ext.grid.plugin.RowEditing', {
+			pluginId: 'rowEditingPlugin',
+			clicksToMoveEditor: 1,
+			autoCancel: false
+		})
+	]
+});
+
+//Special Order Form
+var specialOrderForm = Ext.create('Ext.form.Panel', {
+	itemId: 'specialOrderPanel',
+	bodyPadding: 5,
+	autoScroll:true,
+	enableAll:function(){
+		var me = this;
+		me.down('#txtInviteCode').disabled = false;
+		me.down('#dteSO').disabled = false;
+		me.down('#txtSOSubject').disabled = false;
+		me.down('#btnUpdate').disabled = false;
+		me.down('#btnEdit').disabled = true;
+		/*me.down('').disabled = false;
+		me.down('').disabled = false;
+		me.down('').disabled = false;
+		me.down('').disabled = false;
+		me.down('').disabled = false;
+		me.down('').disabled = false; */
+	},
+	disableAll:function(){
+		var me = this;
+		me.down('#txtInviteCode').disabled = true;
+		me.down('#dteSO').disabled = true;
+		me.down('#txtSOSubject').disabled = true;
+		
+	},
+	items:[
+		{
+			xtype:'panel',
+			itemId: 'specialOrderForm',
+			title: 'Special Order Details',
+			bodyPadding:20,
+			trackResetOnLoad: true,
+			
+			tools:[
 				/* {
-					text: 'No. of Attendees',
-					dataIndex: 'OGTOFATTENDEES',
-					flex: 1
+					xtype:'button',
+					text:'Edit',
+					itemId:'btnEdit',
+					handler: function(){
+						var me = this.up('#specialOrderPanel');
+						me.enableAll();
+					}
 				} */
-			],	
+			],
+			fbar: [
+				'->',
+				{
+					xtype:'button',
+					text:'Edit',
+					itemId:'btnEdit',
+					handler: function(){
+						var me = this.up('#specialOrderPanel');
+						me.enableAll();
+					}
+				},
+				{
+					xtype:'button',
+					text: 'Update',
+					itemId:'btnUpdate',
+					handler: function(){
+						
+						var rec = specialOrderForm.getRecord();
+						
+						specialOrderForm.updateRecord(rec);
+						
+						
+						var specialOrderData = rec.data;
+						Ext.Ajax.request({
+							url: '/updateSpecialOrder',
+							method: 'post',
+							jsonData: {
+								specialOrderList: specialOrderData
+							},
+							success: function(response){
+								Ext.Msg.alert('Success', 'Special Order has been updated!');
+								
+							},
+							failure: function(response){
+								Ext.Msg.alert('Error', response.statusText);
+							}
+						
+						}); 
+						
+						
+						
+						if(rec.phantom)
+							trainingGrid.getStore().add(rec);
+						
+						//trainingForm.reset();
+						//maintenancePanel.switch(trainingGrid);
+					}
+				},
+				{
+					xtype:'button',
+					text: 'Delete',
+					handler: function(){
+						var rec = trainingForm.getRecord();
+						
+						trainingGrid.getStore().remove(rec);
+						trainingForm.reset();
+						trainingMaintenancePanel.switch(trainingGrid);
+						
+					}
+				},
+				'-',
+				{
+					xtype:'button',
+					text: 'Back',
+					handler: function(){
+					
+						specialOrderForm.reset(true);
+						specialOrderPanel.switch(specialOrderGrid);
+						
+						
+						
+					}
+				}
+				
+			],
+			items:[
+				{
+					xtype: 'textfield',
+					fieldLabel: 'Invite code',
+					labelWidth: 120,
+					itemId:'txtInviteCode',
+					name: 'INVITECODE',
+					disabled:true
+				},
+				{
+					xtype: 'textfield', 
+					fieldLabel: 'S.O. #',
+					labelWidth: 120,
+					itemId:'txtSONO',
+					name: 'SONO',
+					disabled:true
+				},
+				{
+					xtype: 'datefield', 
+					fieldLabel: 'S.O. Date',
+					itemId:'dteSO',
+					name:'SODATE',
+					labelWidth: 120,
+					format: 'm/d/Y'
+					
+				},
+				{
+					xtype: 'textareafield', 
+					fieldLabel: 'Subject',
+					itemId:'txtSOSubject',
+					labelWidth: 120,
+					name: 'SOSUBJECT'
+				}
+			]
+		},
+		
+		{
+			xtype:'panel'
+		},
+		{
+			xtype:'panel',
+			itemId: 'nomineesForm',
+			title: 'Nominees',
+			bodyPadding:20,
+			items:[
+				{
+				
+					xtype: 'grid',	
+					itemId:'nomineesGrid',
+					columns: [
+						{
+							header: 'Employee ID',
+							dataIndex: 'EMP_ID',
+							editor:'textfield',
+							flex: 0.30
+						},
+						{
+							header: 'Employee Name', 
+							dataIndex: 'EMPLOYEE_NAME',
+							editor: 'combo',
+							queryMode: 'local',
+							enableRegEx: true,
+							forceSelection: true,
+							name: 'EMPLOYEE_NAME',
+							valueField: 'EMPLOYEE_NAME',
+							displayField: 'EMPLOYEE_NAME',
+							store: Ext.create('Ext.data.Store',{
+								autoLoad: true,
+								fields: ['EMPLOYEE_ID', 'EMPLOYEE_NAME'],
+								proxy: {
+									type: 'ajax',
+									url: '/getEmployee'
+								}
+							}),
+							listeners: {
+								change: function(combo, newVal, oldVal){
+									nomineesForm.down('#EMPLOYEE_NAME').setValue(this.getRawValue());
+								}
+							},
+							flex: 0.50
+						},	
+						{
+							header: '<center>Years in</br>Government</center>',
+							dataIndex: 'YRSGOVT',
+							editor:'textfield',
+							flex: 0.25
+						},
+						{
+							header: '<center>Remarks</center>',
+							dataIndex: 'REMARKS',
+							editor:'textfield',
+							flex: 1
+						},
+						{
+							xtype: 'checkcolumn',
+							header: 'Approve?',
+							dataIndex: 'APPROVE',
+							width: 60,
+							flex: 0.20,
+							editor: {
+								xtype: 'checkbox',
+								cls: 'x-grid-checkheader-editor'
+							}
+						}
+					],
+					buttons: [
+						{
+							text: 'New Nominee',
+							handler: function(){
+								var grid = this.up('grid');
+								var store = grid.getStore();
+								var rowEdit = grid.getPlugin('rowEditingPlugin');
+								var rec = Ext.create('NOMINEES',{
+									EMP_ID:'[new]',
+									EMPLOYEE_NAME:null,
+									AGE:null, 
+									YRSGOVT:null,
+								});
+								store.add(rec);
+								rowEdit.startEdit(grid.getStore().getData().getCount()-1, 0);
+							}
+						},
+						{
+							xtype:'button',
+							text: 'Save',
+							handler: function(){
+								var me = this;
+								var panel = me.up('#trainingCourseGrid');
+								var course = panel.getTrainingCourse();
+								
+								Ext.Ajax.request({
+									url: '/updateTrainingCourse',
+									method: 'POST',
+									jsonData: {
+										courseList: course
+									},
+									success: function(response){
+										Ext.Msg.alert('Success', 'Course library has been updated!');
+									},
+									failure: function(response){
+										Ext.Msg.alert('Error', response.statusText);
+										
+									}
+								
+								}); 
+							}
+						},
+						{
+							text: 'Remove',
+							handler: function() 
+							{
+								var grid = this.up('grid');
+								var store = grid.getStore();
+								var rowEdit = grid.getPlugin('rowEditingPlugin');
+								var sm = grid.getSelectionModel();
+								rowEdit.cancelEdit();
+								store.remove(sm.getSelection());
+								if (store.getCount() > 0) {
+									sm.select(0);
+								}
+							},
+							disabled: false
+						},
+						{
+							text: 'Print',
+							handler: function(){
+								var me = this.up('grid');
+								Ext.ux.grid.Printer.printAutomatically = false;
+								Ext.ux.grid.Printer.print(me.nomineesGrid);
+							}
+						}
+					],
+					plugins: [
+						Ext.create('Ext.grid.plugin.RowEditing', {
+							pluginId: 'rowEditingPlugin',
+							clicksToMoveEditor: 1,
+							autoCancel: false
+						})
+					]
+				
+				}
+			],
+			
 			store: Ext.create('Ext.data.Store', {
-				storeId:'storeTraining',
-				model: 'REPORT_TRAINING',			
+				model: 'NOMINEES',
 				autoLoad: true,
 				autoSync: true,
-				sortOnLoad: true
+				sortOnLoad: true,
+				sorters: {property: 'EMP_ID', direction: 'DESC'}
 			}),
+		}
+		
+		
+	]
+});
+
+//Report Training
+var trainingReportGrid = Ext.create('Ext.grid.Panel', {
+		xtype: 'grid',
+		itemId: 'trainingReportGrid',
+		title: 'Training',			
+		disableSelection: true,					
+		columns: [
+			{
+				text: 'Course Description',
+				dataIndex: 'coursename',
+				flex: 1.5
+			},
+			{
+				header: '<center>Training <br> Institution<\center>', 
+				dataIndex: 'instName',
+				flex: 1			
+			},	
+			{
+				text: 'Venue',
+				dataIndex: 'venue',
+				flex: 1.5
+			},
+			{
+				text: 'Date Start',
+				dataIndex: 'COURSESTART',
+				width: 150,
+				renderer: Ext.util.Format.dateRenderer('Y-m-d')		
+			},
+			{
+				text: 'Date End',
+				dataIndex: 'COURSESTART',
+				width: 150,
+				renderer: Ext.util.Format.dateRenderer('Y-m-d')		
+			}
+			/* {
+				text: 'No. of Attendees',
+				dataIndex: 'OGTOFATTENDEES',
+				flex: 1
+			} */
+		],	
+		store: Ext.create('Ext.data.Store', {
+			storeId:'storeTraining',
+			model: 'REPORT_TRAINING',			
+			autoLoad: true,
+			autoSync: true,
+			sortOnLoad: true
+		}),
 });
 //report On-going training
- var reportgrid = Ext.create('Ext.grid.Panel', {
+ var trainingReportOnGoing = Ext.create('Ext.grid.Panel', {
 			xtype: 'grid',
-			itemId: 'trainingGrid',
+			itemId: 'onGoingGrid',
 			title: 'On-going Training',			
 			disableSelection: true,					
 			columns: [
@@ -975,8 +2005,8 @@ var reportgrid2 = Ext.create('Ext.grid.Panel', {
 			
 }); 
 //report training institution
- var reportgrid1 = Ext.create('Ext.grid.Panel', {
-			itemId: 'trainingGrid1',	
+ var trainingReportInstitution = Ext.create('Ext.grid.Panel', {
+			itemId: 'insitutionGrid',	
 			title: 'Training Institution',	
 			disableSelection: true,
 					tools: [
@@ -1165,6 +2195,7 @@ var queryGrid = Ext.create('Ext.grid.Panel', {
 				sortOnLoad: true
 		}),	
 });
+
 //Training Institution Grid
 var trainingInstitutionGrid = Ext.create('Ext.grid.Panel', {
 	itemId: 'trainingInstitutionGrid',
@@ -1308,6 +2339,7 @@ var trainingInstitutionGrid = Ext.create('Ext.grid.Panel', {
 				});
 				store.add(rec);
 				rowEdit.startEdit(grid.getStore().getData().getCount()-1, 0);
+				//alert(grid.getStore().getData().getCount());
 			}
 		},
 		{
@@ -1350,6 +2382,13 @@ var trainingInstitutionGrid = Ext.create('Ext.grid.Panel', {
 				}
 			},
 			disabled: false
+		},
+		{
+			text: 'Print',
+			handler: function(){
+				Ext.ux.grid.Printer.printAutomatically = false;
+	            Ext.ux.grid.Printer.print(trainingInstitutionGrid);
+			}
 		}
 	],
 	plugins: [
@@ -1412,7 +2451,6 @@ var trainingCourseGrid = Ext.create('Ext.grid.Panel', {
 		}
 		
 	],
-	collapsible:true,
 	columns: [
 		{ 
 			header: '<center>Course Code<\center>', 
@@ -1538,6 +2576,13 @@ var trainingCourseGrid = Ext.create('Ext.grid.Panel', {
 				}
 			},
 			disabled: false
+		},
+		{
+			text: 'Print',
+			handler: function(){
+				Ext.ux.grid.Printer.printAutomatically = false;
+	            Ext.ux.grid.Printer.print(trainingCourseGrid);
+			}
 		}
 	],
 	plugins: [
@@ -1551,16 +2596,18 @@ var trainingCourseGrid = Ext.create('Ext.grid.Panel', {
 
 
 //Training Management Panel
-var maintenancePanel = Ext.create('Ext.panel.Panel',{
+var trainingMaintenancePanel = Ext.create('Ext.panel.Panel',{
 	defaults: {
-		maxHeight: 500,
+		maxHeight: 585,
 		border: false,
 		padding: '10 10 10 10'
 	},
+	height:585,
 	layout: 'card',
 	items: [
 		trainingGrid,
 		trainingForm
+		
 	],
 	switch: function(panel){
 		this.getLayout().setActiveItem(panel);
@@ -1568,23 +2615,101 @@ var maintenancePanel = Ext.create('Ext.panel.Panel',{
 	
 });
 
-//Report Panel
-var reportPanel = Ext.create('Ext.panel.Panel',{
+//Progress Panel
+var trainingProgressPanel = Ext.create('Ext.panel.Panel',{
 	defaults: {
-		maxHeight: 500,
+		maxHeight: 585,
 		border: false,
 		padding: '10 10 10 10'
 	},
+	height:585,
+	layout: 'card',
+	items: [
+		trainingProgressGrid,
+		progressForm
+		
+	],
+	switch: function(panel){
+		this.getLayout().setActiveItem(panel);
+	}	
+});
+
+//Special Order Panel
+var specialOrderPanel = Ext.create('Ext.panel.Panel',{
+	defaults: {
+		maxHeight: 585,
+		border: false,
+		padding: '10 10 10 10'
+	},
+	height:585,
+	layout: 'card',
+	items: [
+		specialOrderGrid,
+		specialOrderForm
+		
+	],
+	switch: function(panel){
+		this.getLayout().setActiveItem(panel);
+	}	
+});
+
+//Report Training
+var trainingReportPanel = Ext.create('Ext.panel.Panel',{
+	defaults: {
+		maxHeight: 585,
+		border: false,
+		padding: '10 10 10 10'
+	},
+	height:585,
 	layout: {
 		type:'vbox',
 		align:'stretch'
 	
 	},
-	
 	items: [
-		reportgrid2,
-		reportgrid,
-		reportgrid1
+		trainingReportGrid
+	],
+	switch: function(panel){
+		this.getLayout().setActiveItem(panel);
+	}	
+});
+
+//Report On-Going Training
+var onGoingTrainingReportPanel = Ext.create('Ext.panel.Panel',{
+	defaults: {
+		maxHeight: 585,
+		border: false,
+		padding: '10 10 10 10'
+	},
+	height:585,
+	layout: {
+		type:'vbox',
+		align:'stretch'
+	
+	},
+	items: [
+		trainingReportOnGoing,	
+	],
+	switch: function(panel){
+		this.getLayout().setActiveItem(panel);
+	}	
+});
+
+//Report Training Institution
+var trainingInstitutionReportPanel = Ext.create('Ext.panel.Panel',{
+	defaults: {
+		maxHeight: 585,
+		border: false,
+		padding: '10 10 10 10'
+	},
+	height:585,
+	layout: {
+		type:'vbox',
+		align:'stretch'
+	
+	},
+	items: [
+		trainingReportInstitution,	
 	],
 	switch: function(panel){
 		this.getLayout().setActiveItem(panel);
@@ -1594,10 +2719,11 @@ var reportPanel = Ext.create('Ext.panel.Panel',{
 //Query Panel
 var queryPanel = Ext.create('Ext.panel.Panel',{
 	defaults: {
-		maxHeight: 500,
+		maxHeight: 585,
 		border: false,
 		padding: '10 10 10 10'
 	},
+	height:585,
 	layout: {
 		type:'vbox',
 		align:'stretch'
@@ -1612,22 +2738,45 @@ var queryPanel = Ext.create('Ext.panel.Panel',{
 	}	
 });
 
-//Library Panel
-var libraryPanel = Ext.create('Ext.panel.Panel',{
-	itemId:'libraryPanel',
+//Training Institution Library Panel
+var trainingInstitutionLibraryPanel = Ext.create('Ext.panel.Panel',{
+	itemId:'trainingInstitutionLibraryPanel',
 	defaults: {
-		maxHeight: 500,
+		maxHeight: 585,
 		border: false,
 		padding: '10 10 10 10',
 		autoScroll:true
 	},
+	height:585,
 	layout: {
 		type:'vbox',
 		align:'stretch'
 	
 	},
 	items: [
-		trainingInstitutionGrid,
+		trainingInstitutionGrid
+		
+	],
+	switch: function(panel){
+		this.getLayout().setActiveItem(panel);
+	}	
+});
+//Course Library Panel
+var courseLibraryPanel = Ext.create('Ext.panel.Panel',{
+	itemId:'courseLibraryPanel',
+	defaults: {
+		maxHeight: 585,
+		border: false,
+		padding: '10 10 10 10',
+		autoScroll:true
+	},
+	height:585,
+	layout: {
+		type:'vbox',
+		align:'stretch'
+	
+	},
+	items: [
 		trainingCourseGrid
 		
 	],
@@ -1638,8 +2787,9 @@ var libraryPanel = Ext.create('Ext.panel.Panel',{
 
 var trainingModule = {
 	xtype: 'tabpanel',
-	title: 'Training Module',
-	//autoScroll: true,
+	title: ' ',
+	itemId: 'trainingModuleBody',
+	flex:1,
 	tabPosition: 'left',
 	tabRotation: 0,
 
@@ -1662,37 +2812,198 @@ var trainingModule = {
 	items: [				
 		{
 			title: 'Maintenance',
+			itemId:'trainingMaintenanceTab',
+			hidden: true,
 			items: [
-				maintenancePanel
+				trainingMaintenancePanel
 			]
 		},
 		{
-			title: 'Report',
+			title: 'Progress',
+			itemId:'progressMaintenanceTab',
+			hidden: true,
 			items: [
-				reportPanel
+				trainingProgressPanel
+			]
+		},
+		{
+			title: 'Special Order',
+			itemId:'specialOrderMaintenanceTab',
+			hidden: true,
+			items: [
+				specialOrderPanel
+			]
+		},
+		{
+			title: 'Training',
+			itemId:'trainingReportTab',
+			hidden:true,
+			items: [
+				trainingReportPanel
+			]
+		},	
+		{
+			title: 'On-going Training',
+			itemId:'trainingOnGoingTab',
+			hidden:true,
+			items: [
+				onGoingTrainingReportPanel
+			]
+		},	
+		{
+			title: 'Training Institution',
+			itemId:'trainingInstitutionTab',
+			hidden:true,
+			items: [
+				trainingInstitutionReportPanel
 			]
 		},	
 		{
 			title: 'Query',
+			itemId: 'queryTab',
+			hidden: true,
 			items: [
 				queryPanel
 			]
 		},
 		{
-			title: 'Library',
+			title: 'Training Institution Library',
+			itemId:'trainingInstitutionLibraryTab',
+			hidden:true,
 			items: [
-				libraryPanel
+				trainingInstitutionLibraryPanel
 			]
-		},						
+			
+		},	
+		{
+			title: 'Course Library',
+			itemId:'courseLibraryTab',
+			hidden:true,
+			items: [
+				courseLibraryPanel
+			]
+		}
 	]	
 };
-
 
 Ext.onReady(function () {	
 	
 	Ext.create('Ext.container.Viewport', {
+		
 		id: 'viewport',
-	    layout: 'fit',
-		items: trainingModule
+		layout: 'hbox',
+		padding: '20 20 20 20',
+		items:[
+		{
+			xtype:'panel',
+			title:'Training Module',
+			width: 223,
+			height:600,
+			defaults: {
+				margin: '10 10 10 10',
+				height: 60
+			},
+			layout: 'vbox',
+			items: [
+				{
+					xtype: 'splitbutton',
+					text : 'Maintenance',
+					width: 200,
+					menu:{
+						items:[
+							{
+								text: 'Training Maintenance',
+								handler: function(){
+									var x = Ext.ComponentQuery.query('#trainingModuleBody')[0];								
+									x.setActiveTab('trainingMaintenanceTab');	
+								}
+							},
+							{
+								text: 'Training Progress Maintenance',
+								handler: function(){
+									var x = Ext.ComponentQuery.query('#trainingModuleBody')[0];								
+									x.setActiveTab('progressMaintenanceTab');	
+								}
+							},
+							{
+								text: 'Special Order Maintenance',
+								handler: function(){
+									var x = Ext.ComponentQuery.query('#trainingModuleBody')[0];								
+									x.setActiveTab('specialOrderMaintenanceTab');	
+								}
+							}
+						]
+					}
+				},
+				{
+					xtype: 'splitbutton',
+					text : 'Report',
+					width: 200,
+					menu:{
+						items:[
+							{
+								text: 'Training',
+								handler: function(){
+									var x = Ext.ComponentQuery.query('#trainingModuleBody')[0];								
+									x.setActiveTab('trainingReportTab');	
+								}
+							},
+							{
+								text: 'On-going Training',
+								handler: function(){
+									var x = Ext.ComponentQuery.query('#trainingModuleBody')[0];								
+									x.setActiveTab('trainingOnGoingTab');	
+								}
+							},
+							{
+								text: 'Training Institution',
+								handler: function(){
+									var x = Ext.ComponentQuery.query('#trainingModuleBody')[0];								
+									x.setActiveTab('trainingInstitutionTab');	
+								}
+							}
+						]
+					}
+					
+				},
+				{
+					xtype: 'button',
+					text : 'Query',
+					width: 200,
+					handler: function(){
+						var x = Ext.ComponentQuery.query('#trainingModuleBody')[0];
+						x.setActiveTab('queryTab');						
+					}
+				},
+				{
+					xtype: 'splitbutton',
+					text : 'Library',
+					width: 200,
+					menu:{
+						items:[
+							{
+								text: 'Training Institution',
+								handler: function(){
+									var x = Ext.ComponentQuery.query('#trainingModuleBody')[0];								
+									x.setActiveTab('trainingInstitutionLibraryTab');	
+								}
+							},
+							{
+								text: 'Course',
+								handler: function(){
+									var x = Ext.ComponentQuery.query('#trainingModuleBody')[0];								
+									x.setActiveTab('courseLibraryTab');	
+								}
+							}
+						]
+					}
+				},
+			]
+			
+		},
+		trainingModule
+		
+		]
+		
 	});	
 });
