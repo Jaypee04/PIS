@@ -1204,6 +1204,31 @@ var progressForm = Ext.create('Ext.form.Panel', {
 					text: 'Save',
 					itemId:'btnSave',
 					handler: function(){
+						/* var form = this.up('form').getForm();
+						console.log(form);
+						if(form.isValid()){
+							form.submit({
+								url: '/upload',
+								method:'POST',
+								headers: {'Content-Type':'multipart/form-data; charset=UTF-8'},
+								waitMsg: 'Uploading your file...',
+								success: function(fp, o) {
+									Ext.MessageBox.alert('File Upload', 'Uploaded successfully.');
+									
+								},
+								failure: function() {
+									Ext.Msg.show({
+												title:'Upload File',
+												msg: 'Fail',
+												buttons: Ext.Msg.OK,
+												icon: Ext.Msg.ERROR,
+												
+											});
+								}
+							});
+						} */
+						
+						
 						var me = this.up('panel');
 						var panel = me.up('panel');
 						
@@ -1213,25 +1238,25 @@ var progressForm = Ext.create('Ext.form.Panel', {
 						
 						var progressData = rec;
 						console.log(progressData);
-						/* Ext.Ajax.request({
+						Ext.Ajax.request({
 							url: '/training/save/progress',
 							method: 'POST',
 							jsonData: {
 								progressValues: progressData
 							},
 							success: function(response){
-								Ext.Msg.alert('Success', 'Training has been added!');
+								Ext.Msg.alert('Success', 'Training progress has been added!');
 								
 							},
 							failure: function(response){
 								Ext.Msg.alert('Error', response.statusText);
 							}
 						
-						});  */
+						}); 
 						
-						/* if(rec.phantom)
-							trainingGrid.getStore().add(rec); */
-					}
+						if(rec.phantom)
+							trainingProgressGrid.getStore().add(rec);
+					} 
 				},
 				{
 					xtype:'button',
@@ -1283,11 +1308,11 @@ var progressForm = Ext.create('Ext.form.Panel', {
 					enableRegEx: true,
 					forceSelection: true,
 					name: 'INVITECODE',
-					listeners: {
+					/* listeners: {
 						change: function(combo, newVal, oldVal){
 							progressForm.down('#INVITECODE').setValue(this.getRawValue());
 						}
-					}
+					} */
 				},
 				{
 					xtype: 'combobox', 
@@ -1298,22 +1323,22 @@ var progressForm = Ext.create('Ext.form.Panel', {
 					queryMode: 'local',
 					enableRegEx: true,
 					forceSelection: true,
-					name: 'INSTCODE',
-					valueField: 'INSTCODE',
-					displayField: 'INSTNAME',
+					name: 'EMPID',
+					valueField: 'EMPLOYEE_ID',
+					displayField: 'EMPLOYEE_ID',
 					store: Ext.create('Ext.data.Store',{
 						autoLoad: true,
-						fields: ['INSTCODE', 'INSTNAME'],
+						fields: ['EMPLOYEE_ID', 'EMPLOYEE_NAME'],
 						proxy: {
 							type: 'ajax',
-							url: '/getInstitution'
+							url: '/getEmployee'
 						}
 					}),
-					listeners: {
+					/* listeners: {
 						change: function(combo, newVal, oldVal){
-							trainingForm.down('#INSTNAME').setValue(this.getRawValue());
+							trainingForm.down('#EMPLOYEE_NAME').setValue(this.getRawValue());
 						}
-					}
+					} */
 					
 				},
 				{
@@ -1333,7 +1358,7 @@ var progressForm = Ext.create('Ext.form.Panel', {
 					name: 'DETAILS'
 				},
 				{
-					xtype: 'fileuploadfield', 
+					xtype: 'filefield', 
 					fieldLabel: 'Attachment',
 					itemId:'fuAttachment',
 					labelWidth: 120,

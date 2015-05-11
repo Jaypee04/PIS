@@ -6,6 +6,7 @@ var bodyParser = require('body-parser');
 var session = require('express-session');
 var cookieParser = require('cookie-parser');
 var multiparty = require('connect-multiparty');
+var multipartMiddleware = multiparty();
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var WindowsStrategy = require('passport-windowsauth');
@@ -274,24 +275,31 @@ function setRoutes(){
 			   ,[EMPID]
 			   ,[PROGDATE]
 			   ,[DETAILS]
-			   ,[PROGATT])
+			   )
 			VALUES
 			   (@INVITECODE, 
 			    @EMPID, 
 				@PROGDATE, 
-				@DETAILS,
-				@PROGATT)
+				@DETAILS
+				)
 		*/});
 		
 		var paramDef = {
 			'INVITECODE': mssql.VarChar(50),
-			'EMPID': mssql.VarChar(50),
+			'EMPID': mssql.VarChar(20),
 			'PROGDATE': mssql.Date,
-			'DETAILS': mssql.VarChar(mssql.MAX),
-			'PROGATT': mssql.VarBinary(mssql.MAX)
+			'DETAILS': mssql.VarChar(mssql.MAX)
 		};
 		
-		var paramVal = req.body.trainingValues;
+		var prog = req.body.progressValues;
+		var progressDate = prog.PROGDATE==null?null:new Date(prog.PROGDATE);
+		var paramVal = {
+			INVITECODE : prog.INVITECODE,
+			EMPID : prog.EMPID,
+			PROGDATE : progressDate,
+			DETAILS : prog.DETAILS
+		}
+		console.log(prog);
 		query3(sql, paramDef, paramVal,
 			function(err, rs){
 			
@@ -300,6 +308,19 @@ function setRoutes(){
 			}
 		); 
 	
+	});
+	
+	//Uploads the file
+	app.post('/upload', multipartMiddleware, function(req, res) {	
+
+		fs.readFile(req.files.PROGATT.path, function (err, data) {
+			// ...
+			var newPath = __dirname + "/uploads/" + req.body.INVITECODE+'-'+ req.files.PROGATT.originalFilename;
+			fs.writeFile(newPath, data, function (err) {
+				res.end('{"success" : "Updated Successfully", "status" : 200}');
+			});
+		});
+		console.log(req.body.INVITECODE+'-'+ req.files.PROGATT.originalFilename);
 	});
 	
 	//
