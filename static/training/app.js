@@ -112,6 +112,10 @@ Ext.define('COURSE_LIB',{
 Ext.define('SPECIAL_ORDER',{
 	extend: 'Ext.data.Model',
 	fields: [
+		{
+			name: 'id',
+			type: 'int'
+		},
 		'INVITECODE',
 		'SONO',
 		'SODATE', 
@@ -129,14 +133,14 @@ Ext.define('SPECIAL_ORDER',{
 Ext.define('NOMINEES',{
 	extend: 'Ext.data.Model',
 	fields: [
-		
-		'EMP_ID',
-		'EMPLOYEE_NAME',
-		'AGE', 
-		'YRSGOVT',
-		'COURSE_T'
+		'INVITECODE',
+		'EMPID',
+		//'EMPNAME',
+		'REMARKS', 
+		//'YRSGOVT',
+		'APPROVE'
 	],
-	idProperty: 'EMP_ID',
+	idProperty: 'EMPID',
 	proxy: {
 		type: 'rest',
 		url: '/training/nominees'
@@ -180,7 +184,8 @@ Ext.define('REPORT_TRAINING',{
 		},
 		'CourseCode', 
 		'instName',
-		'venue'
+		'venue',
+		'attachment'
 		//'OGTOFATTENDEES',	
 	],
 	proxy: {
@@ -208,6 +213,23 @@ Ext.define('REPORT_TRAININGINST',{
 	proxy: {
 		type: 'rest',
 		url: '/training/report_traininginst'
+	}
+});
+//Progress Report
+Ext.define('PROGRESS_REPORT',{
+	extend: 'Ext.data.Model',
+	fields:[
+		{
+			name:'progdate',
+			type:'date'
+		},
+		'courseName', 
+		'instName',
+		'progData'		
+	],
+	proxy: {
+		type: 'rest',
+		url: '/training/progress_report'
 	}
 });
 //query training
@@ -265,7 +287,8 @@ var trainingGrid = Ext.create('Ext.grid.Panel', {
 	columns: [
 		{
 			text: 'Invite code',
-			dataIndex: 'INVITECODE'
+			dataIndex: 'INVITECODE',
+			flex: 0.7
 		},
 		{
 			text: 'Course',
@@ -298,6 +321,11 @@ var trainingGrid = Ext.create('Ext.grid.Panel', {
 			text: 'Venue',
 			dataIndex: 'VENUE',
 			flex: 1
+		},
+		{
+			text: 'Local training?',
+			dataIndex: 'LOCAL',
+			flex: 1
 		}
 	],
 	store: Ext.create('Ext.data.Store', {
@@ -312,6 +340,24 @@ var trainingGrid = Ext.create('Ext.grid.Panel', {
 			if(cellIndex === 1){
 				trainingMaintenancePanel.switch(trainingForm);
 				trainingForm.loadRecord(rec);
+				var INVITECODE = rec.data.INVITECODE;
+				
+				var me = this;
+				Ext.Ajax.request({
+					url: '/training/nominees/'+INVITECODE,
+					method: 'PUT',
+					
+					success: function(response){
+						var nominees = Ext.decode(response.responseText);
+						trainingForm.getNominees(nominees);
+						
+					},
+					failure: function(response){
+						Ext.Msg.alert('Error', response.statusText);
+					}
+				
+				}); 
+				
 				trainingForm.disableAll();
 				
 				var click = trainingForm.down('#requirementsForm').down('#btnSave');//.down('#btnSave').disabled = true;
@@ -357,6 +403,7 @@ var trainingGrid = Ext.create('Ext.grid.Panel', {
 
 });
 
+
 var trainingForm = Ext.create('Ext.form.Panel', {
 	itemId: 'mainPanel',
 	bodyPadding: 5,
@@ -379,6 +426,23 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 		}); 
 		
 
+	},
+	getNominees:function(nom){
+		
+		var me = this;
+		var gridNominees = me.down('#nomineesGrid');
+		gridNominees.getStore().removeAll();
+		//console.log(gridNominees);
+		
+		for(var item in nom){
+			var nomi = nom[item];
+			//console.log(nomi);
+			gridNominees.getStore().add({
+				EMPID: nomi.EMPID,
+				REMARKS: nomi.REMARKS,
+				APPROVE: nomi.APPROVE
+			});
+		}
 	},
 	pad: function(num, size) {
 		var s = num+"";
@@ -599,20 +663,6 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 						
 						}); 
 						
-						Ext.Ajax.request({
-							url: '/training/nominees',
-							method: 'GET',
-							jsonData: {
-								forNominees: trainingData
-							},
-							success: function(response){
-								var me = this;
-							},
-							failure: function(response){
-								Ext.Msg.alert('Error', response.statusText);
-							}
-						});
-						
 						if(rec.phantom)
 							trainingGrid.getStore().add(rec);
 						
@@ -648,7 +698,7 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 						
 						}); 
 						
-						Ext.Ajax.request({
+						/* Ext.Ajax.request({
 							url: '/training/nominees',
 							method: 'GET',
 							jsonData: {
@@ -661,7 +711,7 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 							failure: function(response){
 								Ext.Msg.alert('Error', response.statusText);
 							}
-						});
+						}); */
 						
 						if(rec.phantom)
 							trainingGrid.getStore().add(rec);
@@ -675,9 +725,22 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 					text: 'Delete',
 					handler: function(){
 						var rec = trainingForm.getRecord();
-						
-						trainingGrid.getStore().remove(rec);
-						trainingForm.reset();
+						var trainingData = rec.data.INVITECODE;
+						//console.log(trainingData);
+						Ext.Ajax.request({
+							url: '/training/delete/training_invitation',
+							method: 'POST',
+							jsonData: {
+								deleteValues: trainingData
+							},
+							success: function(response){
+								//Ext.Msg.alert('Success', 'Training invitaion successfully deleted!');
+							},
+							failure: function(response){
+								Ext.Msg.alert('Error', response.statusText);
+							}
+						});
+						Ext.Msg.alert('Success', 'Training invitaion successfully deleted!');
 						trainingMaintenancePanel.switch(trainingGrid);
 						
 					}
@@ -890,62 +953,83 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 								}
 							},
 							flex:1
-						}
+						},
+						
+						
 					]
 				},
-				
-			]
-		},
-		{
-			xtype:'panel'
-		},
-		{
-			xtype:'panel',
-			itemId: 'nomineesForm',
-			title: 'Nominees',
-			bodyPadding:20,
-			items:[
+				//
 				{
-				
 					xtype: 'grid',	
+					itemId:'nomineesGrid',
+					store: {
+						xtype: 'store',
+						fields:['EMPID','REMARKS', 'APPROVE']
+						
+					},
 					columns: [
 						{
 							header: 'Employee ID',
-							dataIndex: 'EMP_ID',
+							dataIndex: 'EMPID',
 							editor:'textfield',
-							flex: 0.30
-						},
-						{
-							header: 'Employee Name', 
-							dataIndex: 'EMPLOYEE_NAME',
-							editor: 'combo',
-							queryMode: 'local',
-							enableRegEx: true,
-							forceSelection: true,
-							name: 'EMPLOYEE_NAME',
-							valueField: 'EMPLOYEE_NAME',
-							displayField: 'EMPLOYEE_NAME',
-							store: Ext.create('Ext.data.Store',{
-								autoLoad: true,
-								fields: ['EMPLOYEE_ID', 'EMPLOYEE_NAME'],
-								proxy: {
-									type: 'ajax',
-									url: '/getEmployee'
-								}
-							}),
-							listeners: {
-								change: function(combo, newVal, oldVal){
-									nomineesForm.down('#EMPLOYEE_NAME').setValue(this.getRawValue());
+							editor:
+							{
+								xtype:'combo',
+								queryMode: 'local',
+								enableRegEx: true,
+								forceSelection: true,
+								name: 'EMPID',
+								valueField: 'EMPID',
+								displayField: 'EMPNAME',
+								store: Ext.create('Ext.data.Store',{
+									autoLoad: true,
+									fields: ['EMPID', 'EMPNAME'],
+									proxy: {
+										type: 'ajax',
+										url: '/getEmployee'
+									}
+								}),
+								listeners: {
+									change: function(combo, newVal, oldVal){
+										nomineesGrid.down('#EMPID').setValue(this.getRawValue());
+									}
 								}
 							},
 							flex: 0.50
-						},	
+						},
+						/* {
+							header: 'Employee Name', 
+							dataIndex: 'EMPNAME',
+							editor: {
+								xtype:'combo',
+								queryMode: 'local',
+								enableRegEx: true,
+								forceSelection: true,
+								name: 'EMPNAME',
+								valueField: 'EMPID',
+								displayField: 'EMPNAME',
+								store: Ext.create('Ext.data.Store',{
+									autoLoad: true,
+									fields: ['EMPID', 'EMPNAME'],
+									proxy: {
+										type: 'ajax',
+										url: '/getEmployee'
+									}
+								}),
+								listeners: {
+									change: function(combo, newVal, oldVal){
+										nomineesForm.down('#EMPNAME').setValue(this.getRawValue());
+									}
+								}
+							},
+							flex: 0.50
+						},	 
 						{
 							header: '<center>Years in</br>Government</center>',
 							dataIndex: 'YRSGOVT',
 							editor:'textfield',
 							flex: 0.25
-						},
+						},*/
 						{
 							header: '<center>Remarks</center>',
 							dataIndex: 'REMARKS',
@@ -972,10 +1056,12 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 								var store = grid.getStore();
 								var rowEdit = grid.getPlugin('rowEditingPlugin');
 								var rec = Ext.create('NOMINEES',{
-									EMP_ID:'[new]',
-									EMPLOYEE_NAME:null,
-									AGE:null, 
+									EMPID:'[new]',
+									EMPNAME:null,
+									REMARKS:null, 
 									YRSGOVT:null,
+									APPROVE:null,
+									INVITECODE:null
 								});
 								store.add(rec);
 								rowEdit.startEdit(grid.getStore().getData().getCount()-1, 0);
@@ -986,17 +1072,32 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 							text: 'Save',
 							handler: function(){
 								var me = this;
-								var panel = me.up('#trainingCourseGrid');
-								var course = panel.getTrainingCourse();
+								var nominees = [];
+								var grid = me.up('grid');
+								var store = grid.getStore();
+								var panel1 = grid.up('panel');
+								var panel2 = panel1.up('panel');
+								store.clearFilter(true);
+								store.data.each(function(row) {
+									nominees.push({ 
+										EMPID: row.data['EMPID'],
+										APPROVE: row.data['APPROVE'],
+										REMARKS: row.data['REMARKS'],
+										INVITECODE: panel2.down('#txtInviteCode').getValue()
+									});
+								});
 								
+								var INVITECODE = panel2.down('#txtInviteCode').getValue();
+								
+								//console.log(nominees[0].APPROVE);
 								Ext.Ajax.request({
-									url: '/updateTrainingCourse',
+									url: '/training/save/nominees',
 									method: 'POST',
 									jsonData: {
-										courseList: course
+										listOfNominees: nominees
 									},
 									success: function(response){
-										Ext.Msg.alert('Success', 'Course library has been updated!');
+										Ext.Msg.alert('Success', 'Nominees library has been updated!');
 									},
 									failure: function(response){
 										Ext.Msg.alert('Error', response.statusText);
@@ -1030,17 +1131,9 @@ var trainingForm = Ext.create('Ext.form.Panel', {
 							autoCancel: false
 						})
 					]
-				
 				}
-			],
-			
-			store: Ext.create('Ext.data.Store', {
-				model: 'NOMINEES',
-				autoLoad: true,
-				autoSync: true,
-				sortOnLoad: true,
-				sorters: {property: 'EMP_ID', direction: 'DESC'}
-			}),
+				//
+			]
 		}
 		
 		
@@ -1053,7 +1146,6 @@ var trainingProgressGrid = Ext.create('Ext.grid.Panel', {
 	title: 'Training Progress',
 	getTrainingCourse: function(){
 		var course = [];
-		
 		
 		var grid = this;
 		var store = grid.getStore();
@@ -1068,6 +1160,14 @@ var trainingProgressGrid = Ext.create('Ext.grid.Panel', {
 		});
 		
 		return course;
+		
+	},
+	fileRenderer: function(fileName){
+		//if (fileName != null) {
+			return "<a href='http://localhost:8001/uploads/'"+ fileName + " target='_blank'></a>";
+			//console.log(fileName);
+		//}
+		//return fileName;
 		
 	},
 	tools: [
@@ -1161,6 +1261,16 @@ var trainingProgressGrid = Ext.create('Ext.grid.Panel', {
 				trainingProgressPanel.switch(progressForm);
 				progressForm.loadRecord(rec);
 			
+			} 
+			if(cellIndex === 5){
+				
+				var inviteCode = rec.data.INVITECODE;
+				var fileName = inviteCode+'-'+rec.data.PROGATT;
+				var me = this;
+				trainingProgressGrid.fileRenderer(fileName);
+				var grid = me.up('grid');
+				//console.log(me);
+				//return "<a href='http://localhost:8001/uploads/'"+fileName + "></a>"
 			}
 		}
 	},
@@ -1204,29 +1314,29 @@ var progressForm = Ext.create('Ext.form.Panel', {
 					text: 'Save',
 					itemId:'btnSave',
 					handler: function(){
-						/* var form = this.up('form').getForm();
-						console.log(form);
+						var form = this.up('form').getForm();
+						//console.log(form);
 						if(form.isValid()){
 							form.submit({
 								url: '/upload',
 								method:'POST',
 								headers: {'Content-Type':'multipart/form-data; charset=UTF-8'},
 								waitMsg: 'Uploading your file...',
-								success: function(fp, o) {
+								success: function(form, response) {
 									Ext.MessageBox.alert('File Upload', 'Uploaded successfully.');
-									
+									var d = Ext.decode(response.response.responseText);
+									//console.log(d.file);
 								},
 								failure: function() {
 									Ext.Msg.show({
-												title:'Upload File',
-												msg: 'Fail',
-												buttons: Ext.Msg.OK,
-												icon: Ext.Msg.ERROR,
-												
-											});
+										title:'Upload File',
+										msg: 'Fail',
+										buttons: Ext.Msg.OK,
+										icon: Ext.Msg.ERROR
+									});
 								}
 							});
-						} */
+						}
 						
 						
 						var me = this.up('panel');
@@ -1236,8 +1346,8 @@ var progressForm = Ext.create('Ext.form.Panel', {
 						
 						progressForm.updateRecord(rec); 
 						
-						var progressData = rec;
-						console.log(progressData);
+						var progressData = rec.data;
+						//console.log(progressData);
 						Ext.Ajax.request({
 							url: '/training/save/progress',
 							method: 'POST',
@@ -1279,6 +1389,7 @@ var progressForm = Ext.create('Ext.form.Panel', {
 					text: 'Back',
 					handler: function(){
 						progressForm.reset(true);
+						
 						trainingProgressPanel.switch(trainingProgressGrid);
 					}
 				}
@@ -1324,11 +1435,11 @@ var progressForm = Ext.create('Ext.form.Panel', {
 					enableRegEx: true,
 					forceSelection: true,
 					name: 'EMPID',
-					valueField: 'EMPLOYEE_ID',
-					displayField: 'EMPLOYEE_ID',
+					valueField: 'EMPID',
+					displayField: 'EMPNAME',
 					store: Ext.create('Ext.data.Store',{
 						autoLoad: true,
-						fields: ['EMPLOYEE_ID', 'EMPLOYEE_NAME'],
+						fields: ['EMPID', 'EMPNAME'],
 						proxy: {
 							type: 'ajax',
 							url: '/getEmployee'
@@ -1506,33 +1617,29 @@ var specialOrderGrid = Ext.create('Ext.grid.Panel', {
 		sorters: {property: 'SONO', direction: 'ASC'}
 		
 	}),	
+	
 	listeners: {
 		cellclick: function(grid, td, cellIndex, rec){
 			if(cellIndex === 1){
 				specialOrderPanel.switch(specialOrderForm);
 				specialOrderForm.loadRecord(rec);
-				//specialOrderForm.disableAll();
+				var INVITECODE = rec.data.INVITECODE;
 				
+				var me = this;
 				Ext.Ajax.request({
-					url: '/training/nominees/'+rec.data.INVITECODE,
-					method: 'GET',
+					url: '/training/nominees/'+INVITECODE,
+					method: 'PUT',
+					
 					success: function(response){
-						var Nominee = response.responseText;
-						console.log(rec.data.INVITECODE);
-						console.log(Ext.decode(Nominee));
+						var nominees = Ext.decode(response.responseText);
+						specialOrderForm.getNominees(nominees);
 						
 					},
 					failure: function(response){
-						Ext.Msg.alert('Error', response.status);
-						console.log(response.status);
+						Ext.Msg.alert('Error', response.statusText);
 					}
 				
-				});
-				
-				/* var click = specialOrderForm.down('#btnSave');//.down('#btnSave').disabled = true;
-				click.disabled=true; */
-				/* var click2 = trainingForm.down('#requirementsForm').down('#btnUpdate');
-				click2.disabled = false; */
+				}); 
 			}
 		}
 	},
@@ -1551,7 +1658,6 @@ var specialOrderGrid = Ext.create('Ext.grid.Panel', {
 					SOSUBJECT: null
 				});
 				store.add(rec);
-				console.log(grid.getStore().getData().getCount());
 				rowEdit.startEdit(grid.getStore().getData().getCount()-1, 0);
 				
 			}
@@ -1619,6 +1725,23 @@ var specialOrderForm = Ext.create('Ext.form.Panel', {
 	itemId: 'specialOrderPanel',
 	bodyPadding: 5,
 	autoScroll:true,
+	getNominees:function(nom){
+		
+		var me = this;
+		var gridNominees = me.down('#nomineesGrid');
+		gridNominees.getStore().removeAll();
+		
+		
+		for(var item in nom){
+			var nomi = nom[item];
+			
+			gridNominees.getStore().add({
+				EMPID: nomi.EMPID,
+				REMARKS: nomi.REMARKS,
+				APPROVE: nomi.APPROVE
+			});
+		}
+	},
 	enableAll:function(){
 		var me = this;
 		me.down('#txtInviteCode').disabled = false;
@@ -1642,6 +1765,22 @@ var specialOrderForm = Ext.create('Ext.form.Panel', {
 	},
 	items:[
 		{
+			xtype: 'textfield',
+			fieldLabel: 'Invite code',
+			labelWidth: 120,
+			name: 'INVITECODE',
+			itemId:'txtInviteCode',
+			disabled:true
+		},
+		{
+			xtype: 'textfield', 
+			fieldLabel: 'S.O. #',
+			labelWidth: 120,
+			itemId:'txtSONO',
+			name: 'SONO',
+			disabled:true
+		},
+		/* {
 			xtype:'panel',
 			itemId: 'specialOrderForm',
 			title: 'Special Order Details',
@@ -1657,7 +1796,7 @@ var specialOrderForm = Ext.create('Ext.form.Panel', {
 						var me = this.up('#specialOrderPanel');
 						me.enableAll();
 					}
-				} */
+				} 
 			],
 			fbar: [
 				'->',
@@ -1766,61 +1905,81 @@ var specialOrderForm = Ext.create('Ext.form.Panel', {
 					itemId:'txtSOSubject',
 					labelWidth: 120,
 					name: 'SOSUBJECT'
-				}
-			]
-		},
-		
-		{
-			xtype:'panel'
-		},
-		{
-			xtype:'panel',
-			itemId: 'nomineesForm',
-			title: 'Nominees',
-			bodyPadding:20,
-			items:[
+				}, */
+				//
 				{
-				
 					xtype: 'grid',	
 					itemId:'nomineesGrid',
+					store: {
+						xtype: 'store',
+						fields:['EMPID','REMARKS', 'APPROVE']
+						
+					},
 					columns: [
 						{
 							header: 'Employee ID',
-							dataIndex: 'EMP_ID',
+							dataIndex: 'EMPID',
 							editor:'textfield',
-							flex: 0.30
-						},
-						{
-							header: 'Employee Name', 
-							dataIndex: 'EMPLOYEE_NAME',
-							editor: 'combo',
-							queryMode: 'local',
-							enableRegEx: true,
-							forceSelection: true,
-							name: 'EMPLOYEE_NAME',
-							valueField: 'EMPLOYEE_NAME',
-							displayField: 'EMPLOYEE_NAME',
-							store: Ext.create('Ext.data.Store',{
-								autoLoad: true,
-								fields: ['EMPLOYEE_ID', 'EMPLOYEE_NAME'],
-								proxy: {
-									type: 'ajax',
-									url: '/getEmployee'
-								}
-							}),
-							listeners: {
-								change: function(combo, newVal, oldVal){
-									nomineesForm.down('#EMPLOYEE_NAME').setValue(this.getRawValue());
+							editor:
+							{
+								xtype:'combo',
+								queryMode: 'local',
+								enableRegEx: true,
+								forceSelection: true,
+								name: 'EMPID',
+								valueField: 'EMPID',
+								displayField: 'EMPNAME',
+								store: Ext.create('Ext.data.Store',{
+									autoLoad: true,
+									fields: ['EMPID', 'EMPNAME'],
+									proxy: {
+										type: 'ajax',
+										url: '/getEmployee'
+									}
+								}),
+								listeners: {
+									change: function(combo, newVal, oldVal){
+										nomineesForm.down('#EMPID').setValue(this.getRawValue());
+									}
 								}
 							},
 							flex: 0.50
-						},	
+						},
+						/* {
+							header: 'Employee Name', 
+							dataIndex: 'EMPNAME',
+							editor: 'textfield', */
+							/* editor: 
+							{
+								xtype:'combo',
+								queryMode: 'local',
+								enableRegEx: true,
+								forceSelection: true,
+								name: 'EMPNAME',
+								valueField: 'EMPNAME',
+								displayField: 'EMPNAME',
+								store: Ext.create('Ext.data.Store',{
+									autoLoad: true,
+									fields: ['EMPID', 'EMPNAME'],
+									proxy: {
+										type: 'ajax',
+										url: '/getEmployee'
+									}
+								}),
+								listeners: {
+									change: function(combo, newVal, oldVal){
+										nomineesForm.down('#EMPNAME').setValue(this.getRawValue());
+									}
+								}
+							}, */
+						/* 	flex: 0.50
+						},	 
 						{
 							header: '<center>Years in</br>Government</center>',
 							dataIndex: 'YRSGOVT',
 							editor:'textfield',
 							flex: 0.25
-						},
+						},*/
 						{
 							header: '<center>Remarks</center>',
 							dataIndex: 'REMARKS',
@@ -1847,13 +2006,17 @@ var specialOrderForm = Ext.create('Ext.form.Panel', {
 								var store = grid.getStore();
 								var rowEdit = grid.getPlugin('rowEditingPlugin');
 								var rec = Ext.create('NOMINEES',{
-									EMP_ID:'[new]',
-									EMPLOYEE_NAME:null,
-									AGE:null, 
+									EMPID:'[new]',
+									EMPNAME:null,
+									REMARKS:null, 
 									YRSGOVT:null,
+									APPROVE:null,
+									INVITECODE:null
 								});
 								store.add(rec);
 								rowEdit.startEdit(grid.getStore().getData().getCount()-1, 0);
+								
+								
 							}
 						},
 						{
@@ -1861,17 +2024,32 @@ var specialOrderForm = Ext.create('Ext.form.Panel', {
 							text: 'Save',
 							handler: function(){
 								var me = this;
-								var panel = me.up('#trainingCourseGrid');
-								var course = panel.getTrainingCourse();
+								var nominees = [];
+								var grid = me.up('grid');
+								var store = grid.getStore();
+								var panel1 = grid.up('panel');
+								var panel2 = panel1.up('panel');
+								store.clearFilter(true);
+								store.data.each(function(row) {
+									nominees.push({ 
+										EMPID: row.data['EMPID'],
+										APPROVE: row.data['APPROVE'],
+										REMARKS: row.data['REMARKS'],
+										INVITECODE: panel2.down('#txtInviteCode').getValue()
+									});
+								});
 								
+								var INVITECODE = panel2.down('#txtInviteCode').getValue();
+								
+								//console.log(nominees[0].APPROVE);
 								Ext.Ajax.request({
-									url: '/updateTrainingCourse',
+									url: '/training/save/nominees',
 									method: 'POST',
 									jsonData: {
-										courseList: course
+										listOfNominees: nominees
 									},
 									success: function(response){
-										Ext.Msg.alert('Success', 'Course library has been updated!');
+										Ext.Msg.alert('Success', 'Nominees library has been updated!');
 									},
 									failure: function(response){
 										Ext.Msg.alert('Error', response.statusText);
@@ -1904,6 +2082,18 @@ var specialOrderForm = Ext.create('Ext.form.Panel', {
 								Ext.ux.grid.Printer.printAutomatically = false;
 								Ext.ux.grid.Printer.print(me.nomineesGrid);
 							}
+						},
+						{
+							xtype:'button',
+							text: 'Back',
+							handler: function(){
+							
+								specialOrderForm.reset(true);
+								specialOrderPanel.switch(specialOrderGrid);
+								
+								
+								
+							}
 						}
 					],
 					plugins: [
@@ -1914,22 +2104,14 @@ var specialOrderForm = Ext.create('Ext.form.Panel', {
 						})
 					]
 				
-				}
-			],
 			
-			store: Ext.create('Ext.data.Store', {
-				model: 'NOMINEES',
-				autoLoad: true,
-				autoSync: true,
-				sortOnLoad: true,
-				sorters: {property: 'EMP_ID', direction: 'DESC'}
-			}),
 		}
+		
+	
 		
 		
 	]
 });
-
 //Report Training
 var trainingReportGrid = Ext.create('Ext.grid.Panel', {
 		xtype: 'grid',
@@ -1964,11 +2146,6 @@ var trainingReportGrid = Ext.create('Ext.grid.Panel', {
 				width: 150,
 				renderer: Ext.util.Format.dateRenderer('Y-m-d')		
 			}
-			/* {
-				text: 'No. of Attendees',
-				dataIndex: 'OGTOFATTENDEES',
-				flex: 1
-			} */
 		],	
 		store: Ext.create('Ext.data.Store', {
 			storeId:'storeTraining',
@@ -1977,6 +2154,15 @@ var trainingReportGrid = Ext.create('Ext.grid.Panel', {
 			autoSync: true,
 			sortOnLoad: true
 		}),
+	buttons: [
+		{
+			text: 'Print',
+			handler: function(){
+				Ext.ux.grid.Printer.printAutomatically = false;
+	            Ext.ux.grid.Printer.print(trainingReportGrid);
+			}
+		}
+	]
 });
 //report On-going training
  var trainingReportOnGoing = Ext.create('Ext.grid.Panel', {
@@ -2011,13 +2197,7 @@ var trainingReportGrid = Ext.create('Ext.grid.Panel', {
 					dataIndex: 'COURSEEND',
 					width: 150,
 					renderer: Ext.util.Format.dateRenderer('Y-m-d')
-				}
-				
-				/* {
-					text: 'No. of Attendees',
-					dataIndex: 'OGTOFATTENDEES',
-					flex: 1
-				} */
+				}	
 			],	
 			store: Ext.create('Ext.data.Store', {
 				storeId:'storeTrainingogt',
@@ -2026,8 +2206,15 @@ var trainingReportGrid = Ext.create('Ext.grid.Panel', {
 				autoSync: true,
 				sortOnLoad: true
 			}),
-		
-			
+	buttons: [
+		{
+			text: 'Print',
+			handler: function(){
+				Ext.ux.grid.Printer.printAutomatically = false;
+	            Ext.ux.grid.Printer.print(trainingReportOnGoing);
+			}
+		}
+	]					
 }); 
 //report training institution
  var trainingReportInstitution = Ext.create('Ext.grid.Panel', {
@@ -2058,8 +2245,7 @@ var trainingReportGrid = Ext.create('Ext.grid.Panel', {
 								}
 							}							
 						}						
-					],
-					
+					],				
 			columns: [
 				{
 					text: 'Course Description',
@@ -2093,7 +2279,7 @@ var trainingReportGrid = Ext.create('Ext.grid.Panel', {
 					text: 'No. of Attendees',
 					dataIndex: 'noAttendees',
 					flex: 1
-				}	
+				},
 			],	
 			store: Ext.create('Ext.data.Store', {
 				storeId:'storeTrainingInst',
@@ -2102,6 +2288,60 @@ var trainingReportGrid = Ext.create('Ext.grid.Panel', {
 				autoSync: true,
 				sortOnLoad: true
 			}),
+		buttons: [
+			{
+				text: 'Print',
+				handler: function(){
+					Ext.ux.grid.Printer.printAutomatically = false;
+					Ext.ux.grid.Printer.print(trainingReportInstitution);
+				}
+			}
+		]
+});
+//Progress Report
+ var progressreport = Ext.create('Ext.grid.Panel', {
+			itemId: 'progressgrid',	
+			title: 'Progress Report',	
+			disableSelection: true,				
+			columns: [
+				{
+					text: 'Course Description',
+					dataIndex: 'courseName',
+					flex: 1.5
+				},		
+				{
+					text: 'Institution Name',
+					dataIndex: 'instName',
+					flex: 1
+				},				
+				{
+					text: 'Date',
+					dataIndex: 'progdate',
+					width: 110,
+					renderer: Ext.util.Format.dateRenderer('Y-m-d')
+				},				
+				{
+					text: 'Progress Data',
+					dataIndex: 'noAttendees',
+					flex: 1
+				}	
+			],	
+			store: Ext.create('Ext.data.Store', {
+				storeId:'storeProgReport',
+				model: 'PROGRESS_REPORT',			
+				autoLoad: true,
+				autoSync: true,
+				sortOnLoad: true
+			}),
+	buttons: [
+		{
+			text: 'Print',
+			handler: function(){
+				Ext.ux.grid.Printer.printAutomatically = false;
+	            Ext.ux.grid.Printer.print(progressreport);
+			}
+		}
+	]
 });
 //query grid
 var queryGrid = Ext.create('Ext.grid.Panel', {
@@ -2364,7 +2604,7 @@ var trainingInstitutionGrid = Ext.create('Ext.grid.Panel', {
 				});
 				store.add(rec);
 				rowEdit.startEdit(grid.getStore().getData().getCount()-1, 0);
-				//alert(grid.getStore().getData().getCount());
+				alert(grid.getStore().getData().getCount());
 			}
 		},
 		{
@@ -2539,7 +2779,7 @@ var trainingCourseGrid = Ext.create('Ext.grid.Panel', {
 		filters: [
 			function(record){
 				return record.get('COURSECODE')!='0000000';
-				console.log(record);
+				//console.log(record);
 			}
 		]
 		
@@ -2740,7 +2980,26 @@ var trainingInstitutionReportPanel = Ext.create('Ext.panel.Panel',{
 		this.getLayout().setActiveItem(panel);
 	}	
 });
-
+// Progress Report 
+var progressReportPanel = Ext.create('Ext.panel.Panel',{
+	defaults: {
+		maxHeight: 585,
+		border: false,
+		padding: '10 10 10 10'
+	},
+	height:585,
+	layout: {
+		type:'vbox',
+		align:'stretch'
+	
+	},
+	items: [
+		progressreport,	
+	],
+	switch: function(panel){
+		this.getLayout().setActiveItem(panel);
+	}	
+});
 //Query Panel
 var queryPanel = Ext.create('Ext.panel.Panel',{
 	defaults: {
@@ -2883,6 +3142,14 @@ var trainingModule = {
 				trainingInstitutionReportPanel
 			]
 		},	
+			{
+			title: 'Progress Report',
+			itemId:'progressReporttab',
+			hidden:true,
+			items: [
+				progressReportPanel
+			]
+		},	
 		{
 			title: 'Query',
 			itemId: 'queryTab',
@@ -2985,6 +3252,13 @@ Ext.onReady(function () {
 								handler: function(){
 									var x = Ext.ComponentQuery.query('#trainingModuleBody')[0];								
 									x.setActiveTab('trainingInstitutionTab');	
+								}
+							},
+								{
+								text: 'Progress Report',
+								handler: function(){
+									var x = Ext.ComponentQuery.query('#trainingModuleBody')[0];								
+									x.setActiveTab('progressReporttab');	
 								}
 							}
 						]

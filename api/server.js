@@ -185,6 +185,7 @@ function setRoutes(){
 			COURSE_LIB AS T2 ON T1.COURSECODE = T2.COURSECODE
 			LEFT OUTER JOIN INSTITUTE_LIB AS T3 ON
 			T1.INSTCODE = T3.INSTCODE
+			
 		*/});
 		query3(
 			sql,
@@ -198,6 +199,29 @@ function setRoutes(){
 		); 
 		
 	});
+	//delete training
+	app.post('/training/delete/training_invitation', function(req, res){
+		var paramDef= {
+			'INVITECODE': mssql.VarChar(50)
+		};
+		var sql="DELETE FROM TRAINING_INVITATION WHERE INVITECODE=@INVITECODE";
+		
+		var values = {
+			INVITECODE:req.body.deleteValues
+		};
+		query3( 
+			sql, 
+			paramDef, 
+			values,
+			function(err, rs){
+			
+				res.json({success: true, message: rs});
+
+			}
+		);
+		console.log('Training Invitation successfully deleted!');
+	});
+	
 	//Nominees
 	app.get('/training/nominees/:INVITECODE', function(req, res){
 		var connection = new mssql.Connection(config, function(err) {
@@ -230,11 +254,123 @@ function setRoutes(){
 		
 		
 	});
-	app.get('/training/nominees', function(req, res){
+	app.put('/training/nominees/:INVITECODE', function(req, res){
+		var sql = MultilineWrapper(function(){/*
+			SELECT EMPID, APPROVE, REMARKS FROM NOMINEES WHERE INVITECODE = @INVITECODE
+		*/});
+		var paramDef = {
+			'INVITECODE': mssql.VarChar(50)
+		};
+		var paramVal = {
+			INVITECODE : req.params.INVITECODE
+			
+		}
+		query3(sql, paramDef, paramVal,
+			function(err, rs){
+			
+				res.json(rs);
+
+			}
+		);  
 	});
 	
 	app.post('/training/save/nominees', function(req, res){
 		
+		//
+		var connection = new mssql.Connection(config, function(err) {
+			
+			var nominees = req.body.listOfNominees;
+			async.series([
+				//Delete NOMINEES LIB BY INVITECODE
+				function(callback){	
+					var paramDef= {
+						'INVITECODE': mssql.VarChar(50)
+					};
+					var sql="DELETE FROM NOMINEES WHERE INVITECODE=@INVITECODE";
+					
+					var values = {
+						INVITECODE:nominees[0].INVITECODE
+					};
+					query2(	connection, 
+						sql, 
+						paramDef, 
+						values,
+						function(err, rs){
+							callback(err);
+					});
+					console.log('NOMINEES: Deleted Successfully');
+				},
+				
+				//Update NOMINEES LIB
+				function(callback){	
+					
+					var paramDef = {
+						'INVITECODE': mssql.VarChar(50),
+						'EMPID': mssql.VarChar(50),
+						'APPROVE': mssql.Bit,
+						'REMARKS': mssql.VarChar(mssql.MAX)
+					};
+					
+					var sql = MultilineWrapper(function(){/*
+						INSERT INTO [NOMINEES]
+						   ([INVITECODE]
+						   ,[EMPID]
+						   ,[APPROVE]
+						   ,[REMARKS])
+						VALUES
+						   (@INVITECODE, 
+							@EMPID, 
+							@APPROVE, 
+							@REMARKS)
+					*/});
+					
+					async.forEachSeries(nominees, function(nom,callback){
+							
+						var values = {
+							INVITECODE : nom.INVITECODE,
+							EMPID : nom.EMPID,
+							APPROVE : nom.APPROVE,
+							REMARKS : nom.REMARKS
+						};
+						query2(connection, 
+							sql, 
+							paramDef, 
+							values,
+							function(err, rs){
+								if(err)
+								{
+									console.log('NOMINEES: Update Failed!');
+									callback(new Error(err));
+								}
+								else
+								{
+									console.log('NOMINEES: Updated Successfully');	
+									callback(null);
+								}
+							}
+						);
+						
+					},
+					function(err)
+					{
+						callback();
+					}
+					);
+					
+				}
+			],
+			function (err) {
+				if(err)
+				{res.json(err);}
+				console.log("xxxxxxxxxxx", err);
+				res.json({success: true});
+			});
+		})
+		
+		
+		//
+		
+		/* console.log(req.body.listOfNominees);
 		var sql = MultilineWrapper(function(){/*
 			INSERT INTO [NOMINEES]
 			   ([INVITECODE]
@@ -246,23 +382,29 @@ function setRoutes(){
 			    @EMPID, 
 				@APPROVE, 
 				@REMARKS)
-		*/});
+		});
 		
 		var paramDef = {
 			'INVITECODE': mssql.VarChar(50),
 			'EMPID': mssql.VarChar(50),
-			'APPROVE': mssql.VarChar(50),
+			'APPROVE': mssql.Bit,
 			'REMARKS': mssql.VarChar(mssql.MAX)
 		};
-		
-		var paramVal = req.body.trainingValues;
+		nom = req.body.listOfNominees;
+		var paramVal = {
+			INVITECODE : nom[0].INVITECODE,
+			EMPID : nom[0].EMPID,
+			APPROVE : nom[0].APPROVE,
+			REMARKS : nom[0].REMARKS
+			
+		}
 		query3(sql, paramDef, paramVal,
 			function(err, rs){
 			
 				res.json({success: true, message: rs});
 
 			}
-		); 
+		);   */
 	
 	});
 	
@@ -275,12 +417,14 @@ function setRoutes(){
 			   ,[EMPID]
 			   ,[PROGDATE]
 			   ,[DETAILS]
+			   ,[PROGATT]
 			   )
 			VALUES
 			   (@INVITECODE, 
 			    @EMPID, 
 				@PROGDATE, 
-				@DETAILS
+				@DETAILS,
+				@PROGATT
 				)
 		*/});
 		
@@ -288,7 +432,8 @@ function setRoutes(){
 			'INVITECODE': mssql.VarChar(50),
 			'EMPID': mssql.VarChar(20),
 			'PROGDATE': mssql.Date,
-			'DETAILS': mssql.VarChar(mssql.MAX)
+			'DETAILS': mssql.VarChar(mssql.MAX),
+			'PROGATT':  mssql.VarChar(50)
 		};
 		
 		var prog = req.body.progressValues;
@@ -297,13 +442,13 @@ function setRoutes(){
 			INVITECODE : prog.INVITECODE,
 			EMPID : prog.EMPID,
 			PROGDATE : progressDate,
-			DETAILS : prog.DETAILS
+			DETAILS : prog.DETAILS,
+			PROGATT : prog.PROGATT
 		}
-		console.log(prog);
 		query3(sql, paramDef, paramVal,
 			function(err, rs){
 			
-				res.json({success: true, message: rs});
+				res.json({success: true});
 
 			}
 		); 
@@ -312,6 +457,19 @@ function setRoutes(){
 	
 	//Uploads the file
 	app.post('/upload', multipartMiddleware, function(req, res) {	
+
+		fs.readFile(req.files.PROGATT.path, function (err, data) {
+			// ...
+			var newPath = __dirname + "/uploads/" + req.body.INVITECODE+'-'+ req.files.PROGATT.originalFilename;
+			fs.writeFile(newPath, data, function (err) {
+				res.send('{"success" : "Updated Successfully", "status" : 200, "file": "' + newPath + '"}'); //+ req.body.INVITECODE+'-'+ req.files.PROGATT.originalFilename + '}');
+			});
+		});
+		console.log(req.body.INVITECODE+'-'+ req.files.PROGATT.originalFilename);
+	});
+	
+	//Downloads the file
+	app.get('/download', multipartMiddleware, function(req, res) {	
 
 		fs.readFile(req.files.PROGATT.path, function (err, data) {
 			// ...
@@ -671,7 +829,7 @@ function setRoutes(){
 		
 		var connection = new mssql.Connection(config, function(err) {
 			var request = new mssql.Request(connection);
-			request.query("SELECT DISTINCT EMP_ID as EMPLOYEE_ID, first_m + ' ' + last_m as EMPLOYEE_NAME FROM plant", function(err, recordset) {
+			request.query("SELECT DISTINCT EMP_ID as EMPID, first_m + ' ' + last_m as EMPNAME FROM plant", function(err, recordset) {
 				var employees = recordset; 
 				res.json(employees);
 				
