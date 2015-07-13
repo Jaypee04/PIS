@@ -222,41 +222,40 @@ function setRoutes(){
 		console.log('Training Invitation successfully deleted!');
 	});
 	
-	//Nominees
-	app.get('/training/nominees/:INVITECODE', function(req, res){
-		var connection = new mssql.Connection(config, function(err) {
-			var sql = MultilineWrapper(function(){/*
-				SELECT INVITECODE, EMPID ,FIRST_M+' '+MIDDLE_M+' '+LAST_M AS EMPLOYEE_NAME, APPROVE, REMARKS
-				FROM NOMINEES LEFT OUTER JOIN plant
-				ON NOMINEES.EMPID = plant.emp_id
-				WHERE INVITECODE = @INVITECODE
-				AND APPROVE = '1'
-			*/});
-			var ps = new mssql.PreparedStatement(connection);
-			ps.input('INVITECODE', mssql.VarChar(50));
-			ps.prepare(sql, function(err) {
-				// ... error checks 
-				
-				ps.execute({param: req.params.INVITECODE}, function(err, recordset) {
-					// ... error checks 
-					ps.unprepare(function(err) {
-							// ... error checks 
-							
-					});
-					
-					var nominees = recordset;
-					console.log(nominees); 
-					res.json(nominees);
-				});
-			});
-		});
+	//delete training progress
+	app.post('/training/delete/training_progress', function(req, res){
+		var paramDef= {
+			'INVITECODE': mssql.VarChar(50),
+			'EMPID': mssql.VarChar(20)
+		};
+		var sql="DELETE FROM PROGRESS WHERE EMPID=@EMPID AND INVITECODE=@INVITECODE";
 		
-		
-		
+		var values = {
+			INVITECODE:req.body.deleteCode.INVITECODE,
+			EMPID:req.body.deleteCode.EMPID
+		};
+		query3( 
+			sql, 
+			paramDef, 
+			values,
+			function(err, rs){
+			
+				res.json({success: true, message: rs});
+
+			}
+		);
+		console.log('Training Progress successfully deleted!');
 	});
+	
+	//Nominees
+	
+	//list of Nominees
 	app.put('/training/nominees/:INVITECODE', function(req, res){
 		var sql = MultilineWrapper(function(){/*
-			SELECT EMPID, APPROVE, REMARKS FROM NOMINEES WHERE INVITECODE = @INVITECODE
+			SELECT EMPID, PLANT.FIRST_M + ' ' + PLANT.LAST_M AS EMPNAME, 
+			NOMINEES.APPROVE, NOMINEES.REMARKS FROM NOMINEES LEFT OUTER JOIN PLANT
+			ON NOMINEES.EMPID = PLANT.EMP_ID
+			WHERE NOMINEES.INVITECODE = @INVITECODE
 		*/});
 		var paramDef = {
 			'INVITECODE': mssql.VarChar(50)
@@ -274,6 +273,7 @@ function setRoutes(){
 		);  
 	});
 	
+	//Save Nominees
 	app.post('/training/save/nominees', function(req, res){
 		
 		//
@@ -366,46 +366,32 @@ function setRoutes(){
 				res.json({success: true});
 			});
 		})
-		
-		
-		//
-		
-		/* console.log(req.body.listOfNominees);
+	
+	});
+	
+	//list of Approved Nominees 
+	app.put('/training/approvedNominees/:INVITECODE', function(req, res){
 		var sql = MultilineWrapper(function(){/*
-			INSERT INTO [NOMINEES]
-			   ([INVITECODE]
-			   ,[EMPID]
-			   ,[APPROVE]
-			   ,[REMARKS])
-			VALUES
-			   (@INVITECODE, 
-			    @EMPID, 
-				@APPROVE, 
-				@REMARKS)
-		});
-		
+			SELECT EMPID, PLANT.FIRST_M + ' ' + PLANT.LAST_M AS EMPNAME, 
+			NOMINEES.APPROVE, NOMINEES.REMARKS FROM NOMINEES LEFT OUTER JOIN PLANT
+			ON NOMINEES.EMPID = PLANT.EMP_ID
+			WHERE NOMINEES.INVITECODE = @INVITECODE
+			AND NOMINEES.APPROVE = 1
+		*/});
 		var paramDef = {
-			'INVITECODE': mssql.VarChar(50),
-			'EMPID': mssql.VarChar(50),
-			'APPROVE': mssql.Bit,
-			'REMARKS': mssql.VarChar(mssql.MAX)
+			'INVITECODE': mssql.VarChar(50)
 		};
-		nom = req.body.listOfNominees;
 		var paramVal = {
-			INVITECODE : nom[0].INVITECODE,
-			EMPID : nom[0].EMPID,
-			APPROVE : nom[0].APPROVE,
-			REMARKS : nom[0].REMARKS
+			INVITECODE : req.params.INVITECODE
 			
 		}
 		query3(sql, paramDef, paramVal,
 			function(err, rs){
 			
-				res.json({success: true, message: rs});
+				res.json(rs);
 
 			}
-		);   */
-	
+		);  
 	});
 	
 	//Saves Training Progress
@@ -454,6 +440,43 @@ function setRoutes(){
 		); 
 	
 	});
+	//Update PROGRESS LIB
+	app.post('/training/update/progress', function(req, res){
+			var paramDef= {
+				'INVITECODE': mssql.VarChar(50),
+				'EMPID': mssql.VarChar(20),
+				'PROGDATE': mssql.Date,
+				'DETAILS': mssql.VarChar(mssql.MAX)
+			};
+			
+			var sql = MultilineWrapper(function(){/*
+				UPDATE [PROGRESS]
+				SET [PROGDATE]=@PROGDATE, 
+				    [DETAILS]=@DETAILS,
+				    [PROGATT]=@PROGATT
+				WHERE [INVITECODE]=@INVITECODE AND [EMPID]=@EMPID
+				
+			*/});
+			
+			var values = {
+				INVITECODE : prog.INVITECODE,
+				EMPID : prog.EMPID,
+				PROGDATE : progressDate,
+				DETAILS : prog.DETAILS,
+				PROGATT : prog.PROGATT
+			};
+			query3( 
+				sql, 
+				paramDef, 
+				values,
+				function(err, rs){
+				
+					res.json({success: true, message: rs});
+
+				}
+			);
+			console.log('Training Progress successfully updated!');
+		});
 	
 	//Uploads the file
 	app.post('/upload', multipartMiddleware, function(req, res) {	
@@ -598,7 +621,13 @@ function setRoutes(){
 	//get Training Progress library
 	app.get('/training/progress', function(req, res){
 		var sql = MultilineWrapper(function(){/*
-			SELECT * FROM PROGRESS
+			SELECT PROGRESS.INVITECODE, PROGRESS.EMPID AS EMPID,
+			PLANT.FIRST_M + ' ' + PLANT.LAST_M AS EMPNAME,
+			PROGRESS.[PROGDATE],
+			PROGRESS.[DETAILS],
+			PROGRESS.[PROGATT] FROM PROGRESS
+			LEFT OUTER JOIN PLANT
+			ON PROGRESS.EMPID = PLANT.EMP_ID
 		*/});
 		query3(
 			sql,
@@ -608,6 +637,7 @@ function setRoutes(){
 					res.json(err)
 				else 
 					res.json(rs);
+					console.log(rs);
 			}
 		); 
 		
